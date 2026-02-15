@@ -1,14 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --bg0: #070A0E;
-  --bg1: #0B1020;
-  --paper: #0F172A;
-  --ink: #E5E7EB;
-  --muted: rgba(229, 231, 235, 0.68);
-  --stroke: rgba(148, 163, 184, 0.18);
-  --accent: #7CFFB2;
+  --bg0: #05070B;
+  --bg1: #0A1020;
+  --paper0: rgba(8, 12, 22, 0.72);
+  --paper1: rgba(15, 23, 42, 0.72);
+  --ink: #EAF0FF;
+  --muted: rgba(234, 240, 255, 0.68);
+  --stroke: rgba(168, 190, 255, 0.16);
+  --stroke2: rgba(124, 255, 178, 0.18);
+  --accent: #7CFFB2; /* phosphor */
+  --accent2: #7CD8FF; /* scanline */
   --danger: #FF4D6D;
+  --warning: #FFCD6A;
 }
 
 @theme inline {
@@ -27,16 +31,17 @@
 
 body {
   background:
-    radial-gradient(1200px 600px at 25% -10%, rgba(124, 255, 178, 0.15), transparent 60%),
-    radial-gradient(900px 500px at 90% 10%, rgba(96, 165, 250, 0.14), transparent 55%),
+    radial-gradient(1200px 700px at 15% -10%, rgba(124, 255, 178, 0.16), transparent 60%),
+    radial-gradient(900px 560px at 92% 8%, rgba(124, 216, 255, 0.14), transparent 55%),
+    radial-gradient(780px 520px at 60% 120%, rgba(255, 77, 109, 0.08), transparent 58%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
   color: var(--ink);
-  font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  letter-spacing: 0.01em;
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+  letter-spacing: 0.008em;
 }
 
 code, pre, kbd, samp {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 ::selection {
@@ -44,8 +49,51 @@ code, pre, kbd, samp {
   color: var(--ink);
 }
 
+/* Atmosphere: a subtle grain + scanline overlay. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.05), transparent 55%),
+    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.03), transparent 50%),
+    repeating-linear-gradient(
+      180deg,
+      rgba(124, 255, 178, 0.02),
+      rgba(124, 255, 178, 0.02) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+  opacity: 0.55;
+  mix-blend-mode: overlay;
+}
+
+.ops-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+.ops-enter {
+  animation: ops-enter 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes ops-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
 .ops-card {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.78));
+  position: relative;
+  background: linear-gradient(180deg, var(--paper1), var(--paper0));
   border: 1px solid var(--stroke);
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.25),
@@ -53,15 +101,43 @@ code, pre, kbd, samp {
   backdrop-filter: blur(8px);
 }
 
+.ops-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(124, 255, 178, 0.22),
+    rgba(124, 216, 255, 0.16),
+    rgba(255, 77, 109, 0.10)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.ops-card:hover::before {
+  opacity: 0.95;
+}
+
 .ops-input {
   background: rgba(2, 6, 23, 0.5);
   border: 1px solid rgba(148, 163, 184, 0.22);
 }
 
+.ops-input:focus-within {
+  border-color: rgba(124, 255, 178, 0.28);
+  box-shadow: 0 0 0 4px rgba(124, 255, 178, 0.08);
+}
+
 .ops-grid {
   background-image:
-    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(rgba(168, 190, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 190, 255, 0.06) 1px, transparent 1px);
+  background-size: 30px 30px;
   background-position: 0 0, 0 0;
 }

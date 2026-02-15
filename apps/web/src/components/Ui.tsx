@@ -33,15 +33,29 @@ export function Badge(props: { tone?: 'ok' | 'warn' | 'bad' | 'neutral'; childre
         : tone === 'bad'
           ? 'border-rose-300/20 bg-rose-400/10 text-rose-100'
           : 'border-white/15 bg-white/5 text-slate-100/90'
-  return <span className={['inline-flex items-center rounded-full border px-2 py-0.5 text-xs', cls].join(' ')}>{props.children}</span>
+  const dot =
+    tone === 'ok'
+      ? 'bg-emerald-300'
+      : tone === 'warn'
+        ? 'bg-amber-300'
+        : tone === 'bad'
+          ? 'bg-rose-300'
+          : 'bg-white/40'
+  return (
+    <span className={['inline-flex items-center gap-2 rounded-full border px-2 py-0.5 text-xs', cls].join(' ')}>
+      <span className={['h-1.5 w-1.5 rounded-full', dot].join(' ')} />
+      <span>{props.children}</span>
+    </span>
+  )
 }
 
 export function Button(props: React.ButtonHTMLAttributes<HTMLButtonElement> & { tone?: 'primary' | 'ghost' | 'danger' }) {
   const tone = props.tone || 'ghost'
-  const base = 'rounded-2xl px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed'
+  const base =
+    'rounded-2xl px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(124,255,178,0.12)]'
   const cls =
     tone === 'primary'
-      ? 'border border-white/20 bg-white/10 hover:bg-white/15'
+      ? 'border border-[color:var(--stroke2)] bg-[rgba(124,255,178,0.10)] text-[color:var(--ink)] hover:bg-[rgba(124,255,178,0.14)]'
       : tone === 'danger'
         ? 'border border-rose-300/20 bg-rose-500/10 text-rose-100 hover:bg-rose-500/15'
         : 'border border-[color:var(--stroke)] bg-black/20 hover:bg-black/30'
@@ -57,7 +71,7 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={[
-        'ops-input w-full rounded-2xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300/40 outline-none focus:border-white/30',
+        'ops-input w-full rounded-2xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300/40 outline-none',
         props.className || '',
       ].join(' ')}
     />
@@ -69,7 +83,7 @@ export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
     <textarea
       {...props}
       className={[
-        'ops-input w-full rounded-2xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300/40 outline-none focus:border-white/30',
+        'ops-input w-full rounded-2xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300/40 outline-none',
         props.className || '',
       ].join(' ')}
     />
@@ -81,10 +95,9 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
     <select
       {...props}
       className={[
-        'ops-input w-full appearance-none rounded-2xl px-3 py-2 text-sm text-slate-100 outline-none focus:border-white/30',
+        'ops-input w-full appearance-none rounded-2xl px-3 py-2 text-sm text-slate-100 outline-none',
         props.className || '',
       ].join(' ')}
     />
   )
 }
-
