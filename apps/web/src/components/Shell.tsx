@@ -8,6 +8,7 @@ const nav = [
   { href: '/overview', label: '概览', icon: IconRadar },
   { href: '/runtime', label: '运行状态', icon: IconPulse },
   { href: '/observability', label: '可观测', icon: IconTelescope },
+  { href: '/interfaces', label: '接口清单', icon: IconApi },
   { href: '/logs/requests', label: '请求日志', icon: IconRoute },
   { href: '/logs/errors', label: '错误日志', icon: IconBug },
   { href: '/traces', label: '链路追踪', icon: IconTrace },
@@ -59,21 +60,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <nav className="ops-card rounded-3xl p-2">
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Console</div>
                 <div className="space-y-1">
-                  {nav.slice(0, 6).map((n) => (
+                  {nav.slice(0, 7).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
                 <div className="my-2 h-px bg-white/10" />
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Admin</div>
                 <div className="space-y-1">
-                  {nav.slice(6, 9).map((n) => (
+                  {nav.slice(7, 10).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
                 <div className="my-2 h-px bg-white/10" />
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Assistant</div>
                 <div className="space-y-1">
-                  {nav.slice(9).map((n) => (
+                  {nav.slice(10).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
@@ -173,6 +174,18 @@ function IconTelescope({ active }: { active: boolean }) {
       <path d="M10 12l4 8" />
       <path d="M14 20h-4" />
       <path d="M4 10l16-6 1 4-16 6-1-4z" />
+    </IconBase>
+  )
+}
+
+function IconApi({ active }: { active: boolean }) {
+  return (
+    <IconBase active={active}>
+      <path d="M7 7h10" />
+      <path d="M7 12h10" />
+      <path d="M7 17h10" />
+      <path d="M5 7a1 1 0 1 0 0.001 0" />
+      <path d="M19 17a1 1 0 1 0 0.001 0" />
     </IconBase>
   )
 }

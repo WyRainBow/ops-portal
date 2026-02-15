@@ -20,6 +20,38 @@ type OverviewRes struct {
 }
 
 // =================
+// API Catalog
+// =================
+
+type ApiRoutesReq struct {
+	g.Meta `path:"/admin/api/routes" method:"get" summary:"接口清单（类似 Swagger）"`
+
+	// Free text query (matches path/summary/tags).
+	Query  string `json:"q" in:"query"`
+	Tag    string `json:"tag" in:"query"`
+	Method string `json:"method" in:"query"`
+
+	// Default true: hide docs endpoints like /swagger, /api.json.
+	HideDocs bool `json:"hide_docs" in:"query"`
+}
+
+type ApiRouteItem struct {
+	Method      string   `json:"method"`
+	Path        string   `json:"path"`
+	Summary     string   `json:"summary,omitempty"`
+	OperationID string   `json:"operation_id,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
+	Deprecated  bool     `json:"deprecated,omitempty"`
+}
+
+type ApiRoutesRes struct {
+	Total   int64            `json:"total"`
+	Methods map[string]int64 `json:"methods"`
+	Tags    map[string]int64 `json:"tags"`
+	Items   []ApiRouteItem   `json:"items"`
+}
+
+// =================
 // Users
 // =================
 

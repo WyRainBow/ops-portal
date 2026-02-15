@@ -13,6 +13,8 @@ import (
 type IAdminV1 interface {
 	Overview(ctx context.Context, req *v1.OverviewReq) (res *v1.OverviewRes, err error)
 
+	ApiRoutes(ctx context.Context, req *v1.ApiRoutesReq) (res *v1.ApiRoutesRes, err error)
+
 	Users(ctx context.Context, req *v1.UsersReq) (res *v1.UsersRes, err error)
 	UpdateUserRole(ctx context.Context, req *v1.UpdateUserRoleReq) (res *v1.UserItem, err error)
 	UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQuotaReq) (res *v1.UserItem, err error)
@@ -34,4 +36,3 @@ type IAdminV1 interface {
 	RuntimeStatus(ctx context.Context, req *v1.RuntimeStatusReq) (res *v1.RuntimeStatusRes, err error)
 	RuntimeLogs(ctx context.Context, req *v1.RuntimeLogsReq) (res *v1.RuntimeLogsRes, err error)
 }
-

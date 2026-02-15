@@ -45,6 +45,21 @@ export async function getOverview(token: string) {
   })
 }
 
+export async function getApiRoutes(
+  token: string,
+  params: { q?: string; tag?: string; method?: string; hide_docs?: boolean } = {}
+) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/api/routes?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
 export async function getUsers(token: string, params: Record<string, any>) {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([k, v]) => {
@@ -224,4 +239,3 @@ export async function aiOps(token: string) {
     body: JSON.stringify({}),
   })
 }
-
