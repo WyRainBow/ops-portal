@@ -1,4 +1,5 @@
-FROM golang:1.22-alpine AS build
+# go.mod requires go >= 1.24.0
+FROM golang:1.24-alpine AS build
 WORKDIR /src
 RUN apk add --no-cache git ca-certificates
 
