@@ -142,12 +142,14 @@ func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRol
 		u.Role = newRole
 	}
 
-	return &v1.UserItem{
-		ID:       u.ID,
-		Username: u.Username,
-		Email:    deref(u.Email),
-		Role:     u.Role,
-		APIQuota: u.APIQuota,
+	return &v1.UpdateUserRoleRes{
+		Item: v1.UserItem{
+			ID:       u.ID,
+			Username: u.Username,
+			Email:    deref(u.Email),
+			Role:     u.Role,
+			APIQuota: u.APIQuota,
+		},
 	}, nil
 }
 
@@ -192,11 +194,13 @@ func (c *ControllerV1) UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQu
 	}
 
 	u.APIQuota = req.APIQuota
-	return &v1.UserItem{
-		ID:       u.ID,
-		Username: u.Username,
-		Email:    deref(u.Email),
-		Role:     u.Role,
-		APIQuota: u.APIQuota,
+	return &v1.UpdateUserQuotaRes{
+		Item: v1.UserItem{
+			ID:       u.ID,
+			Username: u.Username,
+			Email:    deref(u.Email),
+			Role:     u.Role,
+			APIQuota: u.APIQuota,
+		},
 	}, nil
 }

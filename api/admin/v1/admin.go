@@ -97,9 +97,14 @@ type UpdateUserQuotaReq struct {
 }
 
 // GoFrame expects response structs to end with "Res".
-// We keep the response JSON shape by aliasing to the item structs.
-type UpdateUserRoleRes = UserItem
-type UpdateUserQuotaRes = UserItem
+// Keep backward compatibility by wrapping the updated item.
+type UpdateUserRoleRes struct {
+	Item UserItem `json:"item"`
+}
+
+type UpdateUserQuotaRes struct {
+	Item UserItem `json:"item"`
+}
 
 // =================
 // Members
@@ -141,7 +146,9 @@ type CreateMemberReq struct {
 	UserRole  string `json:"user_role,omitempty"`
 }
 
-type CreateMemberRes = MemberItem
+type CreateMemberRes struct {
+	Item MemberItem `json:"item"`
+}
 
 type UpdateMemberReq struct {
 	g.Meta    `path:"/admin/members/{memberId}" method:"patch" summary:"更新成员"`
@@ -153,7 +160,9 @@ type UpdateMemberReq struct {
 	UserRole  string `json:"user_role,omitempty"`
 }
 
-type UpdateMemberRes = MemberItem
+type UpdateMemberRes struct {
+	Item MemberItem `json:"item"`
+}
 
 type DeleteMemberReq struct {
 	g.Meta   `path:"/admin/members/{memberId}" method:"delete" summary:"删除成员"`

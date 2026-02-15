@@ -170,15 +170,17 @@ func (c *ControllerV1) CreateMember(ctx context.Context, req *v1.CreateMemberReq
 		return nil, gerror.Newf("db write failed: %v", err)
 	}
 
-	return &v1.MemberItem{
-		ID:       m.ID,
-		Name:     m.Name,
-		Username: u.Username,
-		Position: deref(m.Position),
-		Team:     deref(m.Team),
-		Status:   m.Status,
-		UserID:   m.UserID,
-		UserRole: u.Role,
+	return &v1.CreateMemberRes{
+		Item: v1.MemberItem{
+			ID:       m.ID,
+			Name:     m.Name,
+			Username: u.Username,
+			Position: deref(m.Position),
+			Team:     deref(m.Team),
+			Status:   m.Status,
+			UserID:   m.UserID,
+			UserRole: u.Role,
+		},
 	}, nil
 }
 
@@ -265,15 +267,17 @@ func (c *ControllerV1) UpdateMember(ctx context.Context, req *v1.UpdateMemberReq
 		return nil, gerror.Newf("db write failed: %v", err)
 	}
 
-	return &v1.MemberItem{
-		ID:       m.ID,
-		Name:     u.Username,
-		Username: u.Username,
-		Position: req.Position,
-		Team:     req.Team,
-		Status:   status,
-		UserID:   &req.UserID,
-		UserRole: u.Role,
+	return &v1.UpdateMemberRes{
+		Item: v1.MemberItem{
+			ID:       m.ID,
+			Name:     u.Username,
+			Username: u.Username,
+			Position: req.Position,
+			Team:     req.Team,
+			Status:   status,
+			UserID:   &req.UserID,
+			UserRole: u.Role,
+		},
 	}, nil
 }
 
