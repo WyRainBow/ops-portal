@@ -19,6 +19,9 @@ services:
       # Allow runtime/status git/df snapshot against the Resume-Agent repo (optional but recommended).
       - /www/wwwroot/Resume-Agent:/www/wwwroot/Resume-Agent:ro
     restart: unless-stopped
+    networks:
+      - default
+      - observability_default
 
   web:
     build:
@@ -43,3 +46,9 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./htpasswd:/etc/nginx/htpasswd:ro
     restart: unless-stopped
+
+networks:
+  # Join the existing observability stack network so api can call loki/prom/grafana
+  # via container DNS without exposing those ports on the host.
+  observability_default:
+    external: true
