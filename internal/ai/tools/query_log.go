@@ -63,6 +63,10 @@ func NewLokiQueryRangeTool() tool.InvokableTool {
 			if start <= 0 {
 				start = now.Add(-1 * time.Hour).UnixNano()
 			}
+			// Be resilient to callers passing seconds/ms/us instead of ns.
+			// 2026 unix ns ~ 1.7e18. We normalize smaller magnitudes up to ns.
+			start = normalizeUnixToNs(start)
+			end = normalizeUnixToNs(end)
 			if time.Duration(end-start) > 24*time.Hour {
 				start = time.Unix(0, end).Add(-24 * time.Hour).UnixNano()
 			}
@@ -117,6 +121,26 @@ func NewLokiQueryRangeTool() tool.InvokableTool {
 	return t
 }
 
+func normalizeUnixToNs(v int64) int64 {
+	if v <= 0 {
+		return v
+	}
+	// seconds
+	if v < 1e11 {
+		return v * 1e9
+	}
+	// milliseconds
+	if v < 1e14 {
+		return v * 1e6
+	}
+	// microseconds
+	if v < 1e17 {
+		return v * 1e3
+	}
+	// nanoseconds
+	return v
+}
+
 func extractLines(raw map[string]any) []LokiLine {
 	out := make([]LokiLine, 0)
 	data, _ := raw["data"].(map[string]any)
@@ -146,4 +170,3 @@ func escapeJSON(s string) string {
 	}
 	return s
 }
-
