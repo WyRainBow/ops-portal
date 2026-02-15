@@ -95,7 +95,7 @@ func (c *ControllerV1) Users(ctx context.Context, req *v1.UsersReq) (res *v1.Use
 	}, nil
 }
 
-func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRoleReq) (res *v1.UserItem, err error) {
+func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRoleReq) (res *v1.UpdateUserRoleRes, err error) {
 	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRol
 	}, nil
 }
 
-func (c *ControllerV1) UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQuotaReq) (res *v1.UserItem, err error) {
+func (c *ControllerV1) UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQuotaReq) (res *v1.UpdateUserQuotaRes, err error) {
 	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err

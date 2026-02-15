@@ -101,7 +101,7 @@ func (c *ControllerV1) Members(ctx context.Context, req *v1.MembersReq) (res *v1
 	return &v1.MembersRes{Items: items, Total: total, Page: page, PageSize: pageSize}, nil
 }
 
-func (c *ControllerV1) CreateMember(ctx context.Context, req *v1.CreateMemberReq) (res *v1.MemberItem, err error) {
+func (c *ControllerV1) CreateMember(ctx context.Context, req *v1.CreateMemberReq) (res *v1.CreateMemberRes, err error) {
 	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (c *ControllerV1) CreateMember(ctx context.Context, req *v1.CreateMemberReq
 	}, nil
 }
 
-func (c *ControllerV1) UpdateMember(ctx context.Context, req *v1.UpdateMemberReq) (res *v1.MemberItem, err error) {
+func (c *ControllerV1) UpdateMember(ctx context.Context, req *v1.UpdateMemberReq) (res *v1.UpdateMemberRes, err error) {
 	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err

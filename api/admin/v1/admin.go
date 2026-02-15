@@ -96,6 +96,11 @@ type UpdateUserQuotaReq struct {
 	APIQuota *int64 `json:"api_quota"`
 }
 
+// GoFrame expects response structs to end with "Res".
+// We keep the response JSON shape by aliasing to the item structs.
+type UpdateUserRoleRes = UserItem
+type UpdateUserQuotaRes = UserItem
+
 // =================
 // Members
 // =================
@@ -136,6 +141,8 @@ type CreateMemberReq struct {
 	UserRole  string `json:"user_role,omitempty"`
 }
 
+type CreateMemberRes = MemberItem
+
 type UpdateMemberReq struct {
 	g.Meta    `path:"/admin/members/{memberId}" method:"patch" summary:"更新成员"`
 	MemberID  int64  `json:"memberId" in:"path"`
@@ -145,6 +152,8 @@ type UpdateMemberReq struct {
 	Status    string `json:"status,omitempty"`
 	UserRole  string `json:"user_role,omitempty"`
 }
+
+type UpdateMemberRes = MemberItem
 
 type DeleteMemberReq struct {
 	g.Meta   `path:"/admin/members/{memberId}" method:"delete" summary:"删除成员"`
