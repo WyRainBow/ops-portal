@@ -7,7 +7,7 @@ package chat
 import (
 	"context"
 
-	"SuperBizAgent/api/chat/v1"
+	"github.com/WyRainBow/ops-portal/api/chat/v1"
 )
 
 type IChatV1 interface {

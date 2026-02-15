@@ -1,0 +1,227 @@
+type Wrapped<T> = { message?: string; data?: T }
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    ...init,
+    headers: {
+      'content-type': 'application/json',
+      ...(init?.headers || {}),
+    },
+    cache: 'no-store',
+  })
+  const body = (await res.json()) as Wrapped<T>
+  // GoFrame middleware wraps responses; errors may still be HTTP 200 with message.
+  if (!res.ok) {
+    throw new Error(body?.message || `HTTP ${res.status}`)
+  }
+  if (body && typeof body === 'object' && 'data' in body) {
+    // If handler errored, data is usually null and message is not "OK".
+    if ((body as any).data == null && body.message && body.message !== 'OK') {
+      throw new Error(body.message)
+    }
+    return (body as any).data as T
+  }
+  return body as any
+}
+
+export async function login(username: string, password: string) {
+  return request<{ access_token: string; token_type: string; user: any }>(`/api/auth/login`, {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  })
+}
+
+export async function me(token: string) {
+  return request<any>(`/api/auth/me`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getOverview(token: string) {
+  return request<any>(`/api/admin/overview`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getUsers(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/users?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function updateUserRole(token: string, userId: number, role: string) {
+  return request<any>(`/api/admin/users/${userId}/role`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ role }),
+  })
+}
+
+export async function updateUserQuota(token: string, userId: number, api_quota: number | null) {
+  return request<any>(`/api/admin/users/${userId}/quota`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ api_quota }),
+  })
+}
+
+export async function getMembers(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/members?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function createMember(token: string, payload: any) {
+  return request<any>(`/api/admin/members`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function updateMember(token: string, memberId: number, payload: any) {
+  return request<any>(`/api/admin/members/${memberId}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function deleteMember(token: string, memberId: number) {
+  return request<any>(`/api/admin/members/${memberId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getRequestLogs(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/logs/requests?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getErrorLogs(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/logs/errors?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getTraces(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/traces?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getTraceDetail(token: string, traceId: string) {
+  return request<any>(`/api/admin/traces/${encodeURIComponent(traceId)}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getPermissionRoles(token: string) {
+  return request<any>(`/api/admin/permissions/roles`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getPermissionAudits(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/permissions/audits?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getRuntimeStatus(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/runtime/status?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getRuntimeLogs(token: string, params: Record<string, any>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return
+    qs.set(k, String(v))
+  })
+  return request<any>(`/api/admin/runtime/logs?${qs.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getObsHealth(token: string) {
+  return request<any>(`/api/observability/health`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function lokiQueryRange(token: string, payload: any) {
+  return request<any>(`/api/observability/loki/query_range`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function chat(token: string, payload: any) {
+  return request<any>(`/api/chat`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function aiOps(token: string) {
+  return request<any>(`/api/ai_ops`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({}),
+  })
+}
+

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"SuperBizAgent/internal/ai/agent/plan_execute_replan"
+	"github.com/WyRainBow/ops-portal/internal/ai/agent/plan_execute_replan"
 	"context"
 	"fmt"
 )

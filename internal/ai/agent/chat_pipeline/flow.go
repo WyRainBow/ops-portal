@@ -1,7 +1,7 @@
 package chat_pipeline
 
 import (
-	"SuperBizAgent/internal/ai/tools"
+	"github.com/WyRainBow/ops-portal/internal/ai/tools"
 	"context"
 
 	"github.com/cloudwego/eino/compose"

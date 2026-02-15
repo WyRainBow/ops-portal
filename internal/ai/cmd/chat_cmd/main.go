@@ -1,8 +1,8 @@
 package main
 
 import (
-	"SuperBizAgent/internal/ai/agent/chat_pipeline"
-	"SuperBizAgent/utility/mem"
+	"github.com/WyRainBow/ops-portal/internal/ai/agent/chat_pipeline"
+	"github.com/WyRainBow/ops-portal/utility/mem"
 	"context"
 	"fmt"
 

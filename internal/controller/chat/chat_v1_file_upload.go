@@ -1,12 +1,12 @@
 package chat
 
 import (
-	"SuperBizAgent/api/chat/v1"
-	"SuperBizAgent/internal/ai/agent/knowledge_index_pipeline"
-	loader2 "SuperBizAgent/internal/ai/loader"
-	"SuperBizAgent/utility/client"
-	"SuperBizAgent/utility/common"
-	"SuperBizAgent/utility/log_call_back"
+	"github.com/WyRainBow/ops-portal/api/chat/v1"
+	"github.com/WyRainBow/ops-portal/internal/ai/agent/knowledge_index_pipeline"
+	loader2 "github.com/WyRainBow/ops-portal/internal/ai/loader"
+	"github.com/WyRainBow/ops-portal/utility/client"
+	"github.com/WyRainBow/ops-portal/utility/common"
+	"github.com/WyRainBow/ops-portal/utility/log_call_back"
 	"context"
 	"fmt"
 	"os"

@@ -1,10 +1,10 @@
 package chat
 
 import (
-	"SuperBizAgent/api/chat/v1"
-	"SuperBizAgent/internal/ai/agent/chat_pipeline"
-	"SuperBizAgent/utility/log_call_back"
-	"SuperBizAgent/utility/mem"
+	"github.com/WyRainBow/ops-portal/api/chat/v1"
+	"github.com/WyRainBow/ops-portal/internal/ai/agent/chat_pipeline"
+	"github.com/WyRainBow/ops-portal/utility/log_call_back"
+	"github.com/WyRainBow/ops-portal/utility/mem"
 	"context"
 
 	"github.com/cloudwego/eino/compose"

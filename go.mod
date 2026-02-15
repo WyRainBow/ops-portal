@@ -1,8 +1,6 @@
-module SuperBizAgent
+module github.com/WyRainBow/ops-portal
 
-go 1.24.0
-
-toolchain go1.24.4
+go 1.22.0
 
 require (
 	github.com/cloudwego/eino v0.6.0
@@ -12,11 +10,14 @@ require (
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.1
 	github.com/cloudwego/eino-ext/components/retriever/milvus v0.0.0-20251011073417-75b93b87b8a9
 	github.com/cloudwego/eino-ext/components/tool/mcp v0.0.5
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/gogf/gf/v2 v2.7.1
 	github.com/mark3labs/mcp-go v0.42.0
 	github.com/milvus-io/milvus-sdk-go/v2 v2.4.2
 	gorm.io/driver/mysql v1.6.0
+	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.31.0
+	golang.org/x/crypto v0.34.0
 )
 
 require (
