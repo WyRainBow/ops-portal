@@ -3,6 +3,9 @@ FROM golang:1.24-alpine AS build
 WORKDIR /src
 RUN apk add --no-cache git ca-certificates
 
+ENV GOPROXY=https://mirrors.tencent.com/go/,direct
+ENV GOSUMDB=sum.golang.google.cn
+
 COPY go.mod go.sum ./
 RUN go mod download
 
