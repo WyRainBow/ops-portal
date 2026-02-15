@@ -2,16 +2,13 @@ package observability
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"time"
 
 	v1 "github.com/WyRainBow/ops-portal/api/observability/v1"
-	"github.com/gogf/gf/v2/errors/gerror"
 )
 
 func (c *ControllerV1) Health(ctx context.Context, req *v1.HealthReq) (res *v1.HealthRes, err error) {
@@ -25,10 +22,10 @@ func (c *ControllerV1) Health(ctx context.Context, req *v1.HealthReq) (res *v1.H
 	node := getenv("OBS_NODE_EXPORTER_URL", "http://127.0.0.1:9100")
 
 	components := map[string]v1.ComponentHealth{
-		"grafana": probe(ctx, grafana+"/api/health"),
-		"loki":    probe(ctx, loki+"/ready"),
-		"prom":    probe(ctx, prom+"/-/ready"),
-		"node":    probe(ctx, node+"/metrics"),
+		"grafana":      probe(ctx, grafana+"/api/health"),
+		"loki":         probe(ctx, loki+"/ready"),
+		"prometheus":   probe(ctx, prom+"/-/ready"),
+		"node_exporter": probe(ctx, node+"/metrics"),
 	}
 
 	host := getenv("OPS_PORTAL_SSH_HOST", "106.53.113.137")
@@ -78,16 +75,3 @@ func getenv(k, def string) string {
 	}
 	return def
 }
-
-// helper for later
-func mustParseURL(raw string) *url.URL {
-	u, err := url.Parse(raw)
-	if err != nil {
-		panic(err)
-	}
-	return u
-}
-
-var _ = json.RawMessage{}
-var _ = gerror.New
-

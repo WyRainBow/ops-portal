@@ -34,6 +34,13 @@ func (c *ControllerV1) LokiQueryRange(ctx context.Context, req *v1.LokiQueryRang
 	now := time.Now().UTC()
 	start := req.Start
 	end := req.End
+	// Prefer ms fields (safer for JS/JSON), convert to ns.
+	if req.StartMs > 0 {
+		start = req.StartMs * int64(time.Millisecond)
+	}
+	if req.EndMs > 0 {
+		end = req.EndMs * int64(time.Millisecond)
+	}
 	if end <= 0 {
 		end = now.UnixNano()
 	}
@@ -106,4 +113,3 @@ func extractLokiLines(raw map[string]any) []v1.LokiLine {
 	}
 	return out
 }
-

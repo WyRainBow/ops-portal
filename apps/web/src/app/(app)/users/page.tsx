@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getToken, parseJwtRole } from '../../../lib/auth'
 import { getUsers, updateUserQuota, updateUserRole } from '../../../lib/api'
 import { Badge, Button, Card, Input } from '../../../components/Ui'
@@ -15,11 +15,11 @@ export default function UsersPage() {
   const [ip, setIp] = useState('')
   const [items, setItems] = useState<any[]>([])
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize] = useState(20)
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!token) return
     setLoading(true)
     setErr(null)
@@ -31,12 +31,11 @@ export default function UsersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [ip, keyword, page, pageSize, token, userRole])
 
   useEffect(() => {
     void load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize])
+  }, [load])
 
   const onUpdateRole = async (id: number) => {
     const r = prompt('输入新角色：admin/member/user', 'member')
@@ -90,7 +89,7 @@ export default function UsersPage() {
       </div>
       </Card>
     )
-  }, [keyword, userRole, ip, err, role])
+  }, [keyword, userRole, ip, err, role, load])
 
   return (
     <div className="space-y-6">

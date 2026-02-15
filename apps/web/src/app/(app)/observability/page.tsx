@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getToken } from '../../../lib/auth'
 import { getObsHealth, lokiQueryRange } from '../../../lib/api'
 import { Badge, Button, Card, Input, TextArea } from '../../../components/Ui'
+import { formatLokiNsToISO } from '../../../lib/format'
 
 export default function ObservabilityPage() {
   const token = getToken() || ''
@@ -40,7 +41,7 @@ export default function ObservabilityPage() {
       const lines = (r?.lines || []) as any[]
       const text = lines
         .map((x) => {
-          const ts = x.ts ? new Date(x.ts).toISOString() : ''
+          const ts = formatLokiNsToISO(x.ts)
           return `${ts} ${x.line || ''}`.trimEnd()
         })
         .join('\n')
@@ -58,16 +59,16 @@ export default function ObservabilityPage() {
   }, [])
 
   const items = useMemo(() => {
-    const h = health || {}
+    const c = health?.components || {}
     const out: { name: string; ok: boolean; latency_ms?: number; status_code?: number; detail?: any }[] = []
     ;['grafana', 'loki', 'prometheus', 'node_exporter'].forEach((k) => {
-      if (!h[k]) return
-      out.push({ name: k, ...h[k] })
+      if (!c[k]) return
+      out.push({ name: k, ...c[k] })
     })
     return out
   }, [health])
 
-  const tunnel = health?.tunnel || {}
+  const tunnel = health?.tunnels || {}
 
   return (
     <div className="space-y-6">

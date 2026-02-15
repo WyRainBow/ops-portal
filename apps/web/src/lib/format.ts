@@ -21,8 +21,20 @@ export function formatBytes(n?: number | null): string {
   return `${v.toFixed(i === 0 ? 0 : 1)} ${units[i]}`
 }
 
+export function formatLokiNsToISO(tsNs?: string | null): string {
+  if (!tsNs) return ''
+  try {
+    // Loki returns unix time in nanoseconds as a string.
+    const ns = BigInt(tsNs)
+    const ms = Number(ns / 1000000n) // safe range
+    if (!Number.isFinite(ms)) return tsNs
+    return new Date(ms).toISOString()
+  } catch {
+    return tsNs
+  }
+}
+
 export function clampInt(v: number, min: number, max: number): number {
   if (Number.isNaN(v)) return min
   return Math.min(max, Math.max(min, Math.trunc(v)))
 }
-

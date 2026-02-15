@@ -63,6 +63,10 @@ func (c *ControllerV1) Users(ctx context.Context, req *v1.UsersReq) (res *v1.Use
 		if r.LastLoginIP != nil {
 			ip = *r.LastLoginIP
 		}
+		email := ""
+		if r.Email != nil {
+			email = *r.Email
+		}
 		created := ""
 		updated := ""
 		if r.CreatedAt != nil {
@@ -74,7 +78,7 @@ func (c *ControllerV1) Users(ctx context.Context, req *v1.UsersReq) (res *v1.Use
 		items = append(items, v1.UserItem{
 			ID:          r.ID,
 			Username:    r.Username,
-			Email:       r.Email,
+			Email:       email,
 			Role:        r.Role,
 			LastLoginIP: ip,
 			APIQuota:    r.APIQuota,
@@ -145,7 +149,7 @@ func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRol
 	return &v1.UserItem{
 		ID:       u.ID,
 		Username: u.Username,
-		Email:    u.Email,
+		Email:    deref(u.Email),
 		Role:     u.Role,
 		APIQuota: u.APIQuota,
 	}, nil
@@ -199,9 +203,15 @@ func (c *ControllerV1) UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQu
 	return &v1.UserItem{
 		ID:       u.ID,
 		Username: u.Username,
-		Email:    u.Email,
+		Email:    deref(u.Email),
 		Role:     u.Role,
 		APIQuota: u.APIQuota,
 	}, nil
 }
 
+func deref(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}

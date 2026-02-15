@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getToken } from '../../../lib/auth'
 import { getRuntimeLogs, getRuntimeStatus, lokiQueryRange } from '../../../lib/api'
-import { clampInt } from '../../../lib/format'
+import { clampInt, formatLokiNsToISO } from '../../../lib/format'
 import { Badge, Button, Card, Input, Select, TextArea } from '../../../components/Ui'
 
 export default function RuntimePage() {
@@ -62,7 +62,7 @@ export default function RuntimePage() {
       const lines = (r?.lines || []) as any[]
       const text = lines
         .map((x) => {
-          const ts = x.ts ? new Date(x.ts).toISOString() : ''
+          const ts = formatLokiNsToISO(x.ts)
           return `${ts} ${x.line || ''}`.trimEnd()
         })
         .join('\n')

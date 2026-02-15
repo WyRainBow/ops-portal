@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createMember, deleteMember, getMembers, updateMember } from '../../../lib/api'
 import { getToken, parseJwtRole } from '../../../lib/auth'
 import { Badge, Button, Card, Input } from '../../../components/Ui'
@@ -13,10 +13,10 @@ export default function MembersPage() {
   const [keyword, setKeyword] = useState('')
   const [items, setItems] = useState<any[]>([])
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize] = useState(20)
   const [err, setErr] = useState<string | null>(null)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!token) return
     setErr(null)
     try {
@@ -25,12 +25,11 @@ export default function MembersPage() {
     } catch (e: any) {
       setErr(e?.message || '加载失败')
     }
-  }
+  }, [keyword, page, pageSize, token])
 
   useEffect(() => {
     void load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize])
+  }, [load])
 
   const onCreate = async () => {
     if (!isAdmin || !token) return

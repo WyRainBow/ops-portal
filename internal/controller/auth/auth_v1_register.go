@@ -43,9 +43,13 @@ func (c *ControllerV1) Register(ctx context.Context, req *v1.RegisterReq) (res *
 
 	u := store.User{
 		Username:     username,
-		Email:        username,
+		Email:        nil,
 		PasswordHash: string(h),
 		Role:         "user",
+	}
+	// If username looks like email, store it.
+	if strings.Contains(username, "@") {
+		u.Email = &username
 	}
 	if err := db.WithContext(ctx).Create(&u).Error; err != nil {
 		return nil, gerror.Newf("db insert failed: %v", err)
@@ -62,9 +66,15 @@ func (c *ControllerV1) Register(ctx context.Context, req *v1.RegisterReq) (res *
 		User: v1.UserSummary{
 			ID:       u.ID,
 			Username: u.Username,
-			Email:    u.Email,
+			Email:    deref(u.Email),
 			Role:     u.Role,
 		},
 	}, nil
 }
 
+func deref(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}

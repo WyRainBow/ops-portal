@@ -23,8 +23,12 @@ type HealthRes struct {
 type LokiQueryRangeReq struct {
 	g.Meta `path:"/observability/loki/query_range" method:"post" summary:"查询 Loki 日志（range）"`
 	Query  string `json:"query"`
-	Start  int64  `json:"start,omitempty"` // unix ns; optional
-	End    int64  `json:"end,omitempty"`   // unix ns; optional
+	// Prefer milliseconds to avoid JS number precision issues; server will convert to ns.
+	StartMs int64 `json:"start_ms,omitempty"` // unix ms; optional
+	EndMs   int64 `json:"end_ms,omitempty"`   // unix ms; optional
+	// Legacy: unix ns; optional. Keep for compatibility with tools/curl.
+	Start int64 `json:"start,omitempty"`
+	End   int64 `json:"end,omitempty"`
 	Limit  int    `json:"limit,omitempty"`
 }
 
@@ -49,4 +53,3 @@ type PromQueryRes struct {
 	Query  string         `json:"query"`
 	Result map[string]any `json:"result"`
 }
-
