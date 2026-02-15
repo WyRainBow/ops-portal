@@ -8,6 +8,9 @@ services:
     environment:
       - OPS_PORTAL_API_ADDR=0.0.0.0
       - PM2_HOME=/root/.pm2
+    extra_hosts:
+      # Allow containers to reach host-local observability stack (bound to 127.0.0.1 on the server).
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:18081:18081"
     volumes:
