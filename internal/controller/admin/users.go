@@ -96,7 +96,7 @@ func (c *ControllerV1) Users(ctx context.Context, req *v1.UsersReq) (res *v1.Use
 }
 
 func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRoleReq) (res *v1.UserItem, err error) {
-	operator, err := requireAdminOrMember(ctx)
+	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -116,10 +116,6 @@ func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRol
 			return nil, gerror.New("用户不存在")
 		}
 		return nil, gerror.Newf("db query failed: %v", err)
-	}
-
-	if operator.Role == "member" && (u.Role == "admin" || newRole == "admin") {
-		return nil, gerror.New("member 无权操作 admin")
 	}
 
 	oldRole := u.Role
@@ -156,7 +152,7 @@ func (c *ControllerV1) UpdateUserRole(ctx context.Context, req *v1.UpdateUserRol
 }
 
 func (c *ControllerV1) UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQuotaReq) (res *v1.UserItem, err error) {
-	operator, err := requireAdminOrMember(ctx)
+	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -172,10 +168,6 @@ func (c *ControllerV1) UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQu
 			return nil, gerror.New("用户不存在")
 		}
 		return nil, gerror.Newf("db query failed: %v", err)
-	}
-
-	if operator.Role == "member" && u.Role == "admin" {
-		return nil, gerror.New("member 无权操作 admin")
 	}
 
 	now := time.Now().UTC()

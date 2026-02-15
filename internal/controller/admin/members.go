@@ -102,7 +102,7 @@ func (c *ControllerV1) Members(ctx context.Context, req *v1.MembersReq) (res *v1
 }
 
 func (c *ControllerV1) CreateMember(ctx context.Context, req *v1.CreateMemberReq) (res *v1.MemberItem, err error) {
-	operator, err := requireAdminOrMember(ctx)
+	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -126,10 +126,6 @@ func (c *ControllerV1) CreateMember(ctx context.Context, req *v1.CreateMemberReq
 		}
 		return nil, gerror.Newf("db query failed: %v", err)
 	}
-	if operator.Role == "member" && (u.Role == "admin" || req.UserRole == "admin") {
-		return nil, gerror.New("member 无权操作 admin")
-	}
-
 	var exists store.Member
 	if err := db.WithContext(ctx).First(&exists, "user_id = ?", req.UserID).Error; err == nil {
 		return nil, gerror.New("该用户已是成员")
@@ -187,7 +183,7 @@ func (c *ControllerV1) CreateMember(ctx context.Context, req *v1.CreateMemberReq
 }
 
 func (c *ControllerV1) UpdateMember(ctx context.Context, req *v1.UpdateMemberReq) (res *v1.MemberItem, err error) {
-	operator, err := requireAdminOrMember(ctx)
+	operator, err := requireAdmin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -212,15 +208,7 @@ func (c *ControllerV1) UpdateMember(ctx context.Context, req *v1.UpdateMemberReq
 		return nil, gerror.Newf("db query failed: %v", err)
 	}
 
-	// If member is linked to an admin user and operator is member, forbid.
-	if operator.Role == "member" && m.UserID != nil {
-		var oldUser store.User
-		if err := db.WithContext(ctx).First(&oldUser, "id = ?", *m.UserID).Error; err == nil {
-			if oldUser.Role == "admin" {
-				return nil, gerror.New("member 无权操作 admin")
-			}
-		}
-	}
+	_ = operator
 
 	var u store.User
 	if err := db.WithContext(ctx).First(&u, "id = ?", req.UserID).Error; err != nil {
@@ -229,10 +217,6 @@ func (c *ControllerV1) UpdateMember(ctx context.Context, req *v1.UpdateMemberReq
 		}
 		return nil, gerror.Newf("db query failed: %v", err)
 	}
-	if operator.Role == "member" && (u.Role == "admin" || req.UserRole == "admin") {
-		return nil, gerror.New("member 无权操作 admin")
-	}
-
 	// prevent duplicate mapping
 	var dup store.Member
 	if err := db.WithContext(ctx).Where("user_id = ? AND id <> ?", req.UserID, req.MemberID).First(&dup).Error; err == nil {
@@ -294,7 +278,7 @@ func (c *ControllerV1) UpdateMember(ctx context.Context, req *v1.UpdateMemberReq
 }
 
 func (c *ControllerV1) DeleteMember(ctx context.Context, req *v1.DeleteMemberReq) (res *v1.DeleteMemberRes, err error) {
-	if _, err := requireAdminOrMember(ctx); err != nil {
+	if _, err := requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	db, err := store.DB(ctx)
@@ -315,4 +299,3 @@ func deref(p *string) string {
 	}
 	return *p
 }
-

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/WyRainBow/ops-portal/internal/controller/admin"
 	"github.com/WyRainBow/ops-portal/internal/controller/auth"
@@ -35,7 +36,17 @@ func main() {
 			port = p
 		}
 	}
-	s.SetPort(port)
+
+	// Default to localhost-only when running on host.
+	// If running in Docker, set OPS_PORTAL_API_ADDR=0.0.0.0 so nginx/web can reach it.
+	addr := os.Getenv("OPS_PORTAL_API_ADDR")
+	if strings.TrimSpace(addr) == "" {
+		addr = "127.0.0.1"
+	}
+	listen := addr
+	if !strings.Contains(addr, ":") {
+		listen = addr + ":" + strconv.Itoa(port)
+	}
+	s.SetAddr(listen)
 	s.Run()
 }
-
