@@ -1,61 +1,36 @@
 package main
 
 import (
-	tools2 "github.com/WyRainBow/ops-portal/internal/ai/tools"
 	"context"
 	"fmt"
+	"os"
+	"strings"
 
-	"github.com/cloudwego/eino-ext/components/model/openai"
-	"github.com/cloudwego/eino/compose"
+	"github.com/WyRainBow/ops-portal/internal/ai/models"
 	"github.com/cloudwego/eino/schema"
 )
 
 func main() {
 	ctx := context.Background()
-	// 创建 ChatModel
-	config := &openai.ChatModelConfig{
-		APIKey:  "bc499880-ede3-4023-8991-2e84c0a83dd1",
-		Model:   "deepseek-v3-1-terminus",
-		BaseURL: "https://ark.cn-beijing.volces.com/api/v3",
-	}
-	chatModel, err := openai.NewChatModel(ctx, config)
-	if err != nil {
-		panic(err)
-	}
-	// 获取工具信息, 用于绑定到 ChatModel
-	toolList, _ := tools2.GetLogMcpTool()
-	toolList = append(toolList, tools2.NewGetCurrentTimeTool())
-	toolInfos := make([]*schema.ToolInfo, 0)
-	var info *schema.ToolInfo
-	for _, todoTool := range toolList {
-		info, err = todoTool.Info(ctx)
-		if err != nil {
-			panic(err)
-		}
-		toolInfos = append(toolInfos, info)
-	}
 
-	// 将 tools 绑定到 ChatModel
-	err = chatModel.BindTools(toolInfos)
+	// Smoke test: call the configured DeepSeek model via Eino OpenAI-compatible client.
+	// Configure via env:
+	// - OPS_PORTAL_DS_QUICK_API_KEY
+	// - OPS_PORTAL_DS_QUICK_BASE_URL
+	// - OPS_PORTAL_DS_QUICK_MODEL
+	if strings.TrimSpace(os.Getenv("OPS_PORTAL_DS_QUICK_API_KEY")) == "" {
+		fmt.Println("Missing OPS_PORTAL_DS_QUICK_API_KEY. Example:")
+		fmt.Println(`  export OPS_PORTAL_DS_QUICK_API_KEY="..."; export OPS_PORTAL_DS_QUICK_BASE_URL="https://ark.cn-beijing.volces.com/api/v3"; export OPS_PORTAL_DS_QUICK_MODEL="deepseek-v3-1-terminus"`)
+		os.Exit(2)
+	}
+	chatModel, err := models.OpenAIForDeepSeekV3Quick(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	// 创建一个完整的处理链
-	chain := compose.NewChain[[]*schema.Message, *schema.Message]()
-	chain.AppendChatModel(chatModel, compose.WithNodeName("chat_model"))
-
-	// 编译并运行 chain
-	agent, err := chain.Compile(ctx)
-	if err != nil {
-		panic(err)
-	}
-	// 运行示例
-	resp, err := agent.Invoke(ctx, []*schema.Message{
-		{
-			Role:    schema.User,
-			Content: "告诉我你有哪些工具可以使用",
-		},
+	resp, err := chatModel.Generate(ctx, []*schema.Message{
+		{Role: schema.System, Content: "You are a helpful SRE assistant. Reply in Chinese."},
+		{Role: schema.User, Content: "用两句话解释什么是 Plan-Execute-Replan，并举一个告警排查例子。"},
 	})
 	if err != nil {
 		panic(err)
