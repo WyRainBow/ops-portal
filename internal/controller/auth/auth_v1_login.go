@@ -14,13 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func deref(p *string) string {
-	if p == nil {
-		return ""
-	}
-	return *p
-}
-
 func (c *ControllerV1) Login(ctx context.Context, req *v1.LoginReq) (res *v1.LoginRes, err error) {
 	db, err := store.DB(ctx)
 	if err != nil {

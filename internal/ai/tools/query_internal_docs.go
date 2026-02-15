@@ -68,10 +68,11 @@ func NewQueryInternalDocsTool() tool.InvokableTool {
 
 func searchDocs(root string, query string, limit int) []docHit {
 	q := strings.ToLower(query)
-	paths := gfile.ScanDirFile(root, "*.md", true)
+	paths, _ := gfile.ScanDirFile(root, "*.md", true)
 	if len(paths) == 0 {
 		// also scan txt
-		paths = append(paths, gfile.ScanDirFile(root, "*.txt", true)...)
+		txts, _ := gfile.ScanDirFile(root, "*.txt", true)
+		paths = append(paths, txts...)
 	}
 	hits := make([]docHit, 0)
 	for _, p := range paths {
@@ -111,4 +112,3 @@ func snippet(s string, idx int, max int) string {
 	seg = strings.TrimSpace(seg)
 	return seg
 }
-

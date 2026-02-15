@@ -71,10 +71,3 @@ func (c *ControllerV1) Register(ctx context.Context, req *v1.RegisterReq) (res *
 		},
 	}, nil
 }
-
-func deref(p *string) string {
-	if p == nil {
-		return ""
-	}
-	return *p
-}

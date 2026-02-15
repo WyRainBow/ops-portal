@@ -13,8 +13,6 @@ import (
 
 	v1 "github.com/WyRainBow/ops-portal/api/admin/v1"
 	"github.com/WyRainBow/ops-portal/internal/store"
-
-	"github.com/gogf/gf/v2/errors/gerror"
 )
 
 func (c *ControllerV1) RuntimeStatus(ctx context.Context, req *v1.RuntimeStatusReq) (res *v1.RuntimeStatusRes, err error) {
@@ -286,4 +284,3 @@ func tailFile(path string, lines int, maxBytes int64) ([]byte, error) {
 }
 
 var _ = strconv.IntSize
-

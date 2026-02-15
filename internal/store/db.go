@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"gorm.io/driver/postgres"
@@ -36,16 +35,8 @@ func DB(ctx context.Context) (*gorm.DB, error) {
 			dbErr = err
 			return
 		}
-		// Keep logging minimal by default; can be configured later.
-		gormLogger := logger.New(
-			g.Log(),
-			logger.Config{
-				SlowThreshold:             500 * time.Millisecond,
-				LogLevel:                  logger.Silent,
-				IgnoreRecordNotFoundError: true,
-				Colorful:                  false,
-			},
-		)
+		// Keep logging silent by default (and avoid coupling to gf logger interfaces).
+		gormLogger := logger.Default.LogMode(logger.Silent)
 
 		dbInst, dbErr = gorm.Open(postgres.Open(dsn), &gorm.Config{
 			Logger: gormLogger,
@@ -53,4 +44,3 @@ func DB(ctx context.Context) (*gorm.DB, error) {
 	})
 	return dbInst, dbErr
 }
-

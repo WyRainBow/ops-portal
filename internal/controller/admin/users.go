@@ -200,10 +200,3 @@ func (c *ControllerV1) UpdateUserQuota(ctx context.Context, req *v1.UpdateUserQu
 		APIQuota: u.APIQuota,
 	}, nil
 }
-
-func deref(p *string) string {
-	if p == nil {
-		return ""
-	}
-	return *p
-}
