@@ -15,13 +15,15 @@ type RouteItem = {
   source?: string
 }
 
+type ProjectTab = 'all' | 'ops-portal' | 'resume-agent'
+
 export default function InterfacesPage() {
   const token = getToken() || ''
 
   const [q, setQ] = useState('')
   const [method, setMethod] = useState('')
   const [tag, setTag] = useState('')
-  const [source, setSource] = useState('')
+  const [projectTab, setProjectTab] = useState<ProjectTab>('all')
   const [hideDocs, setHideDocs] = useState(true)
 
   const [loading, setLoading] = useState(false)
@@ -33,10 +35,10 @@ export default function InterfacesPage() {
       q: q.trim() || undefined,
       method: method || undefined,
       tag: tag || undefined,
-      source: source || undefined,
+      source: projectTab === 'all' ? undefined : projectTab,
       hide_docs: hideDocs,
     }
-  }, [q, method, tag, source, hideDocs])
+  }, [q, method, tag, projectTab, hideDocs])
 
   const refresh = async () => {
     setLoading(true)
@@ -67,7 +69,9 @@ export default function InterfacesPage() {
     .sort((a, b) => a.localeCompare(b))
 
   const methodOptions = Object.keys(methods).sort((a, b) => a.localeCompare(b))
-  const sourceOptions = Object.keys(sources).sort((a, b) => a.localeCompare(b))
+
+  const countOps = Number(sources['ops-portal'] || 0)
+  const countResume = Number(sources['resume-agent'] || 0)
 
   return (
     <div className="space-y-6">
@@ -81,8 +85,6 @@ export default function InterfacesPage() {
           <Button
             tone="ghost"
             onClick={() => {
-              // In production, nginx proxies /swagger -> api:18081/swagger.
-              // In dev, it still works if you access via nginx; fallback to api origin otherwise.
               const origin = window.location.origin || 'http://127.0.0.1:18080'
               window.open(`${origin}/swagger`, '_blank', 'noreferrer')
             }}
@@ -133,16 +135,10 @@ export default function InterfacesPage() {
           </div>
         </div>
         <div className="ops-card rounded-3xl p-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-slate-200/60">Sources</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-200/60">Projects</div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {Object.entries(sources)
-              .sort((a, b) => b[1] - a[1])
-              .map(([s, n]) => (
-                <Badge key={s} tone="neutral">
-                  {s} · {n}
-                </Badge>
-              ))}
-            {Object.keys(sources).length === 0 ? <div className="text-xs text-slate-200/60">-</div> : null}
+            <Badge tone="neutral">ops-portal · {countOps}</Badge>
+            <Badge tone="neutral">resume-agent · {countResume}</Badge>
           </div>
         </div>
       </div>
@@ -152,12 +148,37 @@ export default function InterfacesPage() {
         subtitle="支持 path/summary/tags 模糊匹配；默认隐藏 /swagger 与 /api.json。"
         right={err ? <Badge tone="bad">{err}</Badge> : <Badge tone="neutral">items: {items.length}</Badge>}
       >
-        {!sources['resume-agent'] ? (
+        {!countResume ? (
           <div className="mb-3 rounded-xl border border-amber-300/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-100/90">
             未拉取到 resume-agent 接口。请确认后端可访问 `OPS_PORTAL_RESUME_OPENAPI_URL`（默认 `http://127.0.0.1:9000/openapi.json`）。
           </div>
         ) : null}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
+
+        <div className="mb-4 inline-flex rounded-xl border border-white/10 bg-black/15 p-1">
+          <button
+            type="button"
+            onClick={() => setProjectTab('all')}
+            className={`rounded-lg px-3 py-1.5 text-xs ${projectTab === 'all' ? 'bg-white text-black' : 'text-slate-200/80 hover:bg-white/10'}`}
+          >
+            全部 ({total})
+          </button>
+          <button
+            type="button"
+            onClick={() => setProjectTab('ops-portal')}
+            className={`rounded-lg px-3 py-1.5 text-xs ${projectTab === 'ops-portal' ? 'bg-white text-black' : 'text-slate-200/80 hover:bg-white/10'}`}
+          >
+            ops-portal ({countOps})
+          </button>
+          <button
+            type="button"
+            onClick={() => setProjectTab('resume-agent')}
+            className={`rounded-lg px-3 py-1.5 text-xs ${projectTab === 'resume-agent' ? 'bg-white text-black' : 'text-slate-200/80 hover:bg-white/10'}`}
+          >
+            resume-agent ({countResume})
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="mb-1 text-xs text-slate-200/70">search</div>
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="例如: /api/admin  或  login  或  loki" />
@@ -184,17 +205,6 @@ export default function InterfacesPage() {
               ))}
             </Select>
           </div>
-          <div>
-            <div className="mb-1 text-xs text-slate-200/70">source</div>
-            <Select value={source} onChange={(e) => setSource(e.target.value)}>
-              <option value="">All</option>
-              {sourceOptions.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
-          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -213,7 +223,7 @@ export default function InterfacesPage() {
               setQ('')
               setMethod('')
               setTag('')
-              setSource('')
+              setProjectTab('all')
               setHideDocs(true)
             }}
             disabled={loading}
