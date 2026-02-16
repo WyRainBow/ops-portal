@@ -5,8 +5,8 @@
 package chat
 
 import (
-	"SuperBizAgent/api/chat"
-	"SuperBizAgent/internal/logic/sse"
+	"github.com/WyRainBow/ops-portal/api/chat"
+	"github.com/WyRainBow/ops-portal/internal/logic/sse"
 )
 
 type ControllerV1 struct {

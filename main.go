@@ -1,9 +1,9 @@
 package main
 
 import (
-	"SuperBizAgent/internal/controller/chat"
-	"SuperBizAgent/utility/common"
-	"SuperBizAgent/utility/middleware"
+	"github.com/WyRainBow/ops-portal/internal/controller/chat"
+	"github.com/WyRainBow/ops-portal/utility/common"
+	"github.com/WyRainBow/ops-portal/utility/middleware"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"

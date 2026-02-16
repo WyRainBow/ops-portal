@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+	"os"
+	"strings"
 
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
@@ -9,22 +11,22 @@ import (
 )
 
 func OpenAIForDeepSeekV31Think(ctx context.Context) (cm model.ToolCallingChatModel, err error) {
-	model, err := g.Cfg().Get(ctx, "ds_think_chat_model.model")
+	m, err := getCfgOrEnv(ctx, "ds_think_chat_model.model", "OPS_PORTAL_DS_THINK_MODEL")
 	if err != nil {
 		return nil, err
 	}
-	api_key, err := g.Cfg().Get(ctx, "ds_think_chat_model.api_key")
+	k, err := getCfgOrEnv(ctx, "ds_think_chat_model.api_key", "OPS_PORTAL_DS_THINK_API_KEY")
 	if err != nil {
 		return nil, err
 	}
-	base_url, err := g.Cfg().Get(ctx, "ds_think_chat_model.base_url")
+	u, err := getCfgOrEnv(ctx, "ds_think_chat_model.base_url", "OPS_PORTAL_DS_THINK_BASE_URL")
 	if err != nil {
 		return nil, err
 	}
 	config := &openai.ChatModelConfig{
-		Model:   model.String(),
-		APIKey:  api_key.String(),
-		BaseURL: base_url.String(),
+		Model:   m,
+		APIKey:  k,
+		BaseURL: u,
 	}
 	cm, err = openai.NewChatModel(ctx, config)
 	if err != nil {
@@ -34,26 +36,40 @@ func OpenAIForDeepSeekV31Think(ctx context.Context) (cm model.ToolCallingChatMod
 }
 
 func OpenAIForDeepSeekV3Quick(ctx context.Context) (cm model.ToolCallingChatModel, err error) {
-	model, err := g.Cfg().Get(ctx, "ds_quick_chat_model.model")
+	m, err := getCfgOrEnv(ctx, "ds_quick_chat_model.model", "OPS_PORTAL_DS_QUICK_MODEL")
 	if err != nil {
 		return nil, err
 	}
-	api_key, err := g.Cfg().Get(ctx, "ds_quick_chat_model.api_key")
+	k, err := getCfgOrEnv(ctx, "ds_quick_chat_model.api_key", "OPS_PORTAL_DS_QUICK_API_KEY")
 	if err != nil {
 		return nil, err
 	}
-	base_url, err := g.Cfg().Get(ctx, "ds_quick_chat_model.base_url")
+	u, err := getCfgOrEnv(ctx, "ds_quick_chat_model.base_url", "OPS_PORTAL_DS_QUICK_BASE_URL")
 	if err != nil {
 		return nil, err
 	}
 	config := &openai.ChatModelConfig{
-		Model:   model.String(),
-		APIKey:  api_key.String(),
-		BaseURL: base_url.String(),
+		Model:   m,
+		APIKey:  k,
+		BaseURL: u,
 	}
 	cm, err = openai.NewChatModel(ctx, config)
 	if err != nil {
 		return nil, err
 	}
 	return cm, nil
+}
+
+func getCfgOrEnv(ctx context.Context, cfgKey string, envKey string) (string, error) {
+	// Env wins so Docker/.env can override without editing config files.
+	if envKey != "" {
+		if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
+			return v, nil
+		}
+	}
+	v, err := g.Cfg().Get(ctx, cfgKey)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(v.String()), nil
 }

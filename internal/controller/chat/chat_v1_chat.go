@@ -1,39 +1,28 @@
 package chat
 
 import (
-	"SuperBizAgent/api/chat/v1"
-	"SuperBizAgent/internal/ai/agent/chat_pipeline"
-	"SuperBizAgent/utility/log_call_back"
-	"SuperBizAgent/utility/mem"
+	"github.com/WyRainBow/ops-portal/api/chat/v1"
+	"github.com/WyRainBow/ops-portal/internal/ai/agent/plan_execute_replan"
 	"context"
-
-	"github.com/cloudwego/eino/compose"
-	"github.com/cloudwego/eino/schema"
 )
 
 func (c *ControllerV1) Chat(ctx context.Context, req *v1.ChatReq) (res *v1.ChatRes, err error) {
-	id := req.Id
 	msg := req.Question
-	userMessage := &chat_pipeline.UserMessage{
-		ID:      id,
-		Query:   msg,
-		History: mem.GetSimpleMemory(id).GetMessages(),
-	}
+	// Use the Plan/Execute/Replan agent so the assistant can call observability tools.
+	// This endpoint is intentionally read-only: tools do not execute commands or write DB.
+	query := `
+"你是一个只读的智能运维助手。"
+"你必须在回答前按需调用工具获取事实（例如 Loki 日志、Prometheus 告警、只读数据库查询），避免凭空猜测。"
+"你不能执行任何修复动作，只能输出诊断结论与建议的下一步命令（供人工执行）。"
+"用户问题如下："
+` + msg
 
-	runner, err := chat_pipeline.BuildChatAgent(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := runner.Invoke(ctx, userMessage, compose.WithCallbacks(log_call_back.LogCallback(nil)))
+	out, _, err := plan_execute_replan.BuildPlanAgent(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	res = &v1.ChatRes{
-		Answer: out.Content,
+		Answer: out,
 	}
-	mem.GetSimpleMemory(id).SetMessages(schema.UserMessage(msg))
-	mem.GetSimpleMemory(id).SetMessages(schema.SystemMessage(out.Content))
-
 	return res, nil
 }

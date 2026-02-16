@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/cloudwego/eino/components/tool"
@@ -51,8 +52,10 @@ type PrometheusAlertsOutput struct {
 
 // queryPrometheusAlerts 查询Prometheus告警
 func queryPrometheusAlerts() (PrometheusAlertsResult, error) {
-	return PrometheusAlertsResult{}, nil
-	baseURL := "http://127.0.0.1:9090"
+	baseURL := os.Getenv("OBS_PROM_URL")
+	if baseURL == "" {
+		baseURL = "http://127.0.0.1:9090"
+	}
 	apiURL := fmt.Sprintf("%s/api/v1/alerts", baseURL)
 
 	log.Printf("Querying Prometheus alerts: %s", apiURL)

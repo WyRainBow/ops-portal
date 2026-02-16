@@ -1,7 +1,7 @@
 package main
 
 import (
-	retriever2 "SuperBizAgent/internal/ai/retriever"
+	retriever2 "github.com/WyRainBow/ops-portal/internal/ai/retriever"
 	"context"
 	"fmt"
 )

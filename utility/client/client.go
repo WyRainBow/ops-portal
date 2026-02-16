@@ -1,7 +1,7 @@
 package client
 
 import (
-	"SuperBizAgent/utility/common"
+	"github.com/WyRainBow/ops-portal/utility/common"
 	"context"
 	"fmt"
 

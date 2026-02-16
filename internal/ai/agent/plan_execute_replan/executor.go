@@ -1,8 +1,8 @@
 package plan_execute_replan
 
 import (
-	"SuperBizAgent/internal/ai/models"
-	"SuperBizAgent/internal/ai/tools"
+	"github.com/WyRainBow/ops-portal/internal/ai/models"
+	"github.com/WyRainBow/ops-portal/internal/ai/tools"
 	"context"
 
 	"github.com/cloudwego/eino/adk"
@@ -21,6 +21,8 @@ func NewExecutor(ctx context.Context) (adk.Agent, error) {
 	toolList = append(toolList, tools.NewPrometheusAlertsQueryTool())
 	// file
 	toolList = append(toolList, tools.NewQueryInternalDocsTool())
+	// db (readonly)
+	toolList = append(toolList, tools.NewDBReadonlyQueryTool())
 	// time
 	toolList = append(toolList, tools.NewGetCurrentTimeTool())
 	execModel, err := models.OpenAIForDeepSeekV3Quick(ctx)

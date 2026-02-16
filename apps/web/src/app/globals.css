@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+:root {
+  --bg0: #f8f8f7;
+  --bg1: #ffffff;
+  --paper0: #ffffff;
+  --paper1: #fcfcfb;
+  --ink: #0f1115;
+  --muted: #6c7380;
+  --stroke: #e6e8eb;
+  --stroke2: #d1d5db;
+  --accent: #111111;
+  --accent2: #2f3a46;
+  --danger: #b42318;
+  --warning: #b54708;
+}
+
+@theme inline {
+  --color-background: var(--bg0);
+  --color-foreground: var(--ink);
+}
+
+body {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f5f6f8 100%);
+  color: var(--ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+  letter-spacing: 0.004em;
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+::selection {
+  background: rgba(15, 23, 42, 0.16);
+  color: #0b0b0b;
+}
+
+.ops-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+.ops-enter {
+  animation: ops-enter 320ms ease-out both;
+}
+
+@keyframes ops-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ops-card {
+  position: relative;
+  background: linear-gradient(180deg, var(--paper0), var(--paper1));
+  border: 1px solid var(--stroke);
+  box-shadow:
+    0 1px 0 rgba(15, 17, 21, 0.04),
+    0 10px 28px rgba(15, 17, 21, 0.06);
+}
+
+.ops-input {
+  background: #ffffff;
+  border: 1px solid #d8dde3;
+}
+
+.ops-input:focus-within {
+  border-color: #9aa4b2;
+  box-shadow: 0 0 0 4px rgba(71, 85, 105, 0.1);
+}
+
+.ops-grid {
+  background-image: linear-gradient(180deg, rgba(17, 24, 39, 0.02), rgba(17, 24, 39, 0));
+}
+
+/* Light-mode compatibility overrides for legacy dark utility classes used across pages. */
+.text-slate-100,
+.text-slate-100\/90 {
+  color: #0f1115 !important;
+}
+.text-slate-200\/80,
+.text-slate-200\/75,
+.text-slate-200\/70,
+.text-slate-200\/65 {
+  color: #475467 !important;
+}
+.text-slate-200\/60,
+.text-slate-200\/50,
+.text-slate-200\/40,
+.text-slate-300\/70 {
+  color: #667085 !important;
+}
+.border-white\/10 {
+  border-color: #e4e7ec !important;
+}
+.border-white\/5 {
+  border-color: #eef1f4 !important;
+}
+.bg-white\/5 {
+  background-color: #f7f8fa !important;
+}
+.hover\:bg-white\/5:hover {
+  background-color: #f2f4f7 !important;
+}
+.bg-black\/40,
+.bg-black\/30,
+.bg-black\/25,
+.bg-black\/20,
+.bg-black\/15 {
+  background-color: #f8fafc !important;
+}
