@@ -1,15 +1,39 @@
 type Wrapped<T> = { message?: string; data?: T }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...init,
-    headers: {
-      'content-type': 'application/json',
-      ...(init?.headers || {}),
-    },
-    cache: 'no-store',
-  })
-  const body = (await res.json()) as Wrapped<T>
+  let res: Response
+  try {
+    res = await fetch(path, {
+      ...init,
+      headers: {
+        'content-type': 'application/json',
+        ...(init?.headers || {}),
+      },
+      cache: 'no-store',
+    })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    throw new Error(`请求失败（后端未启动或网络错误）: ${msg}`)
+  }
+
+  const contentType = res.headers.get('content-type') ?? ''
+  const raw = await res.text()
+
+  let body: Wrapped<T>
+  if (raw === '') {
+    body = {} as Wrapped<T>
+  } else if (contentType.includes('application/json')) {
+    try {
+      body = JSON.parse(raw) as Wrapped<T>
+    } catch {
+      throw new Error(`接口返回非 JSON: ${raw.slice(0, 100)}${raw.length > 100 ? '…' : ''}`)
+    }
+  } else {
+    // 后端返回了 HTML/纯文本（如 500 Internal Server Error）
+    const preview = raw.slice(0, 80).replace(/\s+/g, ' ')
+    throw new Error(res.ok ? `接口返回非 JSON: ${preview}…` : `HTTP ${res.status}: ${preview}…`)
+  }
+
   // GoFrame middleware wraps responses; errors may still be HTTP 200 with message.
   if (!res.ok) {
     throw new Error(body?.message || `HTTP ${res.status}`)

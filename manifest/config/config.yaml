@@ -24,6 +24,7 @@ doubao_embedding_model:
   base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
   model: "text-embedding-v4"
 
-file_dir: "/你的路径/github.com/WyRainBow/ops-portal/internal/ai/cmd/knowledge_cmd/docs"
-
+# Local docs directory used by internal-docs retriever.
+# Override via config or env if needed.
+file_dir: "/Users/wy770/xiaolin/ops-portal/internal/ai/cmd/knowledge_cmd/docs"
 

@@ -34,11 +34,6 @@ func (c *ControllerV1) ApiRoutes(ctx context.Context, req *v1.ApiRoutesReq) (res
 		return nil, err
 	}
 
-	spec, err := fetchLocalOpenAPI(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	hideDocs := req.HideDocs
 	if !req.HideDocs && req.Query == "" && req.Tag == "" && req.Method == "" {
 		// Backwards-compatible default when query params are omitted.
@@ -46,28 +41,16 @@ func (c *ControllerV1) ApiRoutes(ctx context.Context, req *v1.ApiRoutesReq) (res
 	}
 
 	var items []v1.ApiRouteItem
-	for p, methods := range spec.Paths {
-		if hideDocs && isDocsPath(p) {
-			continue
-		}
-		for m, op := range methods {
-			method := strings.ToUpper(strings.TrimSpace(m))
-			if method == "" || strings.HasPrefix(strings.ToLower(m), "x-") {
-				continue
-			}
-			// OpenAPI allows a "parameters" pseudo-field under paths.
-			if method == "PARAMETERS" {
-				continue
-			}
-			items = append(items, v1.ApiRouteItem{
-				Method:      method,
-				Path:        p,
-				Summary:     strings.TrimSpace(op.Summary),
-				OperationID: strings.TrimSpace(op.OperationID),
-				Tags:        op.Tags,
-				Deprecated:  op.Deprecated,
-			})
-		}
+	localSpec, err := fetchLocalOpenAPI(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items = append(items, specToItems(localSpec, "ops-portal", hideDocs)...)
+
+	if resumeSpec, err := fetchResumeOpenAPI(ctx); err == nil {
+		items = append(items, specToItems(resumeSpec, "resume-agent", hideDocs)...)
+	} else {
+		g.Log().Warning(ctx, "resume-agent openapi unavailable:", err)
 	}
 
 	items = filterApiRoutes(items, req)
@@ -86,15 +69,18 @@ func (c *ControllerV1) ApiRoutes(ctx context.Context, req *v1.ApiRoutesReq) (res
 
 	methods := map[string]int64{}
 	tags := map[string]int64{}
+	sources := map[string]int64{}
 	for _, it := range items {
 		methods[it.Method]++
 		tags[primaryTag(it.Tags)]++
+		sources[it.Source]++
 	}
 
 	return &v1.ApiRoutesRes{
 		Total:   int64(len(items)),
 		Methods: methods,
 		Tags:    tags,
+		Sources: sources,
 		Items:   items,
 	}, nil
 }
@@ -103,13 +89,17 @@ func filterApiRoutes(items []v1.ApiRouteItem, req *v1.ApiRoutesReq) []v1.ApiRout
 	q := strings.ToLower(strings.TrimSpace(req.Query))
 	tag := strings.ToLower(strings.TrimSpace(req.Tag))
 	method := strings.ToUpper(strings.TrimSpace(req.Method))
+	source := strings.ToLower(strings.TrimSpace(req.Source))
 
-	if q == "" && tag == "" && method == "" {
+	if q == "" && tag == "" && method == "" && source == "" {
 		return items
 	}
 	out := make([]v1.ApiRouteItem, 0, len(items))
 	for _, it := range items {
 		if method != "" && it.Method != method {
+			continue
+		}
+		if source != "" && strings.ToLower(strings.TrimSpace(it.Source)) != source {
 			continue
 		}
 		if tag != "" {
@@ -146,10 +136,10 @@ func isDocsPath(p string) bool {
 	if p == "" {
 		return false
 	}
-	if p == "/api.json" || p == "/swagger" {
+	if p == "/api.json" || p == "/swagger" || p == "/openapi.json" || p == "/docs" || p == "/redoc" {
 		return true
 	}
-	return strings.HasPrefix(p, "/swagger/")
+	return strings.HasPrefix(p, "/swagger/") || strings.HasPrefix(p, "/docs")
 }
 
 func fetchLocalOpenAPI(ctx context.Context) (*openAPISpec, error) {
@@ -162,7 +152,18 @@ func fetchLocalOpenAPI(ctx context.Context) (*openAPISpec, error) {
 		}
 	}
 	url := fmt.Sprintf("http://127.0.0.1:%d/api.json", port)
+	return fetchOpenAPIFromURL(ctx, url)
+}
 
+func fetchResumeOpenAPI(ctx context.Context) (*openAPISpec, error) {
+	url := strings.TrimSpace(os.Getenv("OPS_PORTAL_RESUME_OPENAPI_URL"))
+	if url == "" {
+		url = "http://127.0.0.1:9000/openapi.json"
+	}
+	return fetchOpenAPIFromURL(ctx, url)
+}
+
+func fetchOpenAPIFromURL(ctx context.Context, url string) (*openAPISpec, error) {
 	client := &http.Client{Timeout: 4 * time.Second}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -194,6 +195,34 @@ func fetchLocalOpenAPI(ctx context.Context) (*openAPISpec, error) {
 	return &spec, nil
 }
 
+func specToItems(spec *openAPISpec, source string, hideDocs bool) []v1.ApiRouteItem {
+	items := make([]v1.ApiRouteItem, 0, len(spec.Paths)*2)
+	for p, methods := range spec.Paths {
+		if hideDocs && isDocsPath(p) {
+			continue
+		}
+		for m, op := range methods {
+			method := strings.ToUpper(strings.TrimSpace(m))
+			if method == "" || strings.HasPrefix(strings.ToLower(m), "x-") {
+				continue
+			}
+			if method == "PARAMETERS" {
+				continue
+			}
+			items = append(items, v1.ApiRouteItem{
+				Method:      method,
+				Path:        p,
+				Summary:     strings.TrimSpace(op.Summary),
+				OperationID: strings.TrimSpace(op.OperationID),
+				Tags:        op.Tags,
+				Deprecated:  op.Deprecated,
+				Source:      source,
+			})
+		}
+	}
+	return items
+}
+
 func parsePort(s string) (int, error) {
 	n := 0
 	for _, ch := range s {
@@ -210,4 +239,3 @@ func parsePort(s string) (int, error) {
 	}
 	return n, nil
 }
-

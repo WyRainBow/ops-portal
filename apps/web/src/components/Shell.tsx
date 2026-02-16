@@ -31,7 +31,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen text-slate-100">
+    <div className="min-h-screen text-slate-900">
       <div className="ops-grid">
         <div className="mx-auto flex max-w-[1320px] gap-6 px-4 py-6">
           <aside className="w-[280px] shrink-0">
@@ -43,13 +43,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     <div className="ops-display mt-1 text-lg font-semibold">可观测与运维助手</div>
                     <div className="mt-2 text-xs text-[color:var(--muted)]">role: {role}</div>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/20 p-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-2">
                     <IconChip />
                   </div>
                 </div>
 
                 <button
-                  className="mt-4 w-full rounded-2xl border border-[color:var(--stroke)] bg-black/20 px-3 py-2 text-sm hover:bg-black/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(124,255,178,0.12)]"
+                  className="mt-4 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-200"
                   onClick={logout}
                   type="button"
                 >
@@ -64,14 +64,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
-                <div className="my-2 h-px bg-white/10" />
+                <div className="my-2 h-px bg-slate-200" />
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Admin</div>
                 <div className="space-y-1">
                   {nav.slice(7, 10).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
-                <div className="my-2 h-px bg-white/10" />
+                <div className="my-2 h-px bg-slate-200" />
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Assistant</div>
                 <div className="space-y-1">
                   {nav.slice(10).map((n) => (
@@ -80,7 +80,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 </div>
               </nav>
 
-              <div className="rounded-3xl border border-white/10 bg-black/15 p-4">
+              <div className="rounded-3xl border border-slate-200 bg-white p-4">
                 <div className="text-xs text-slate-200/60">Shortcut</div>
                 <div className="mt-2 font-mono text-xs text-[color:var(--accent2)]">
                   {`{job="resume-backend", stream="error"}`}
@@ -114,20 +114,20 @@ function NavItem(props: {
       href={props.href}
       className={[
         'group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition',
-        props.active ? 'bg-white/10 text-slate-100' : 'text-slate-200/75 hover:bg-white/5 hover:text-slate-100',
+        props.active ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
       ].join(' ')}
     >
       <span
         className={[
           'inline-flex h-8 w-8 items-center justify-center rounded-2xl border',
-          props.active ? 'border-[color:var(--stroke2)] bg-[rgba(124,255,178,0.10)]' : 'border-white/10 bg-black/15 group-hover:border-white/15',
+          props.active ? 'border-slate-300 bg-white' : 'border-slate-200 bg-white group-hover:border-slate-300',
         ].join(' ')}
       >
         {props.icon({ active: props.active })}
       </span>
       <span className="min-w-0 truncate">{props.label}</span>
-      <span className="ml-auto h-2 w-2 rounded-full bg-[color:var(--accent)] opacity-0 transition group-hover:opacity-40" />
-      {props.active ? <span className="h-2 w-2 rounded-full bg-[color:var(--accent)] opacity-70" /> : null}
+      <span className="ml-auto h-2 w-2 rounded-full bg-slate-900 opacity-0 transition group-hover:opacity-30" />
+      {props.active ? <span className="h-2 w-2 rounded-full bg-slate-900 opacity-80" /> : null}
     </Link>
   )
 }
@@ -136,7 +136,7 @@ function IconBase(props: { children: React.ReactNode; active?: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <g
-        stroke={props.active ? 'rgba(124,255,178,0.95)' : 'rgba(234,240,255,0.78)'}
+        stroke={props.active ? '#111111' : '#334155'}
         strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -285,7 +285,7 @@ function IconAIOps({ active }: { active: boolean }) {
 function IconChip() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <g stroke="rgba(124,255,178,0.9)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <g stroke="#111111" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 9h6v6H9V9z" />
         <path d="M4 10h2M4 14h2M18 10h2M18 14h2" />
         <path d="M10 4v2M14 4v2M10 18v2M14 18v2" />

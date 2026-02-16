@@ -30,6 +30,7 @@ type ApiRoutesReq struct {
 	Query  string `json:"q" in:"query"`
 	Tag    string `json:"tag" in:"query"`
 	Method string `json:"method" in:"query"`
+	Source string `json:"source" in:"query"`
 
 	// Default true: hide docs endpoints like /swagger, /api.json.
 	HideDocs bool `json:"hide_docs" in:"query"`
@@ -42,12 +43,14 @@ type ApiRouteItem struct {
 	OperationID string   `json:"operation_id,omitempty"`
 	Tags        []string `json:"tags,omitempty"`
 	Deprecated  bool     `json:"deprecated,omitempty"`
+	Source      string   `json:"source"`
 }
 
 type ApiRoutesRes struct {
 	Total   int64            `json:"total"`
 	Methods map[string]int64 `json:"methods"`
 	Tags    map[string]int64 `json:"tags"`
+	Sources map[string]int64 `json:"sources"`
 	Items   []ApiRouteItem   `json:"items"`
 }
 

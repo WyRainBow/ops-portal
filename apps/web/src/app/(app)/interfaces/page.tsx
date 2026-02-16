@@ -12,6 +12,7 @@ type RouteItem = {
   operation_id?: string
   tags?: string[]
   deprecated?: boolean
+  source?: string
 }
 
 export default function InterfacesPage() {
@@ -20,6 +21,7 @@ export default function InterfacesPage() {
   const [q, setQ] = useState('')
   const [method, setMethod] = useState('')
   const [tag, setTag] = useState('')
+  const [source, setSource] = useState('')
   const [hideDocs, setHideDocs] = useState(true)
 
   const [loading, setLoading] = useState(false)
@@ -31,9 +33,10 @@ export default function InterfacesPage() {
       q: q.trim() || undefined,
       method: method || undefined,
       tag: tag || undefined,
+      source: source || undefined,
       hide_docs: hideDocs,
     }
-  }, [q, method, tag, hideDocs])
+  }, [q, method, tag, source, hideDocs])
 
   const refresh = async () => {
     setLoading(true)
@@ -57,12 +60,14 @@ export default function InterfacesPage() {
   const total = Number(data?.total || 0)
   const methods = (data?.methods || {}) as Record<string, number>
   const tags = (data?.tags || {}) as Record<string, number>
+  const sources = (data?.sources || {}) as Record<string, number>
 
   const tagOptions = Object.keys(tags)
     .filter((t) => t && t !== '_')
     .sort((a, b) => a.localeCompare(b))
 
   const methodOptions = Object.keys(methods).sort((a, b) => a.localeCompare(b))
+  const sourceOptions = Object.keys(sources).sort((a, b) => a.localeCompare(b))
 
   return (
     <div className="space-y-6">
@@ -70,9 +75,7 @@ export default function InterfacesPage() {
         <div>
           <div className="text-xs uppercase tracking-[0.22em] text-slate-300/70">Inventory</div>
           <div className="mt-1 text-2xl font-semibold">接口清单</div>
-          <div className="mt-2 text-sm text-slate-200/70">
-            从本机 GoFrame OpenAPI（/api.json）抽取接口列表，做成可搜索的 Swagger 视图。
-          </div>
+          <div className="mt-2 text-sm text-slate-200/70">从 ops-portal + resume-agent OpenAPI 聚合接口列表，做成可搜索的 Swagger 视图。</div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -93,7 +96,7 @@ export default function InterfacesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         <div className="ops-card rounded-3xl p-4">
           <div className="text-xs uppercase tracking-[0.24em] text-slate-200/60">Total</div>
           <div className="ops-display mt-2 text-3xl font-semibold">{total}</div>
@@ -129,6 +132,19 @@ export default function InterfacesPage() {
             ) : null}
           </div>
         </div>
+        <div className="ops-card rounded-3xl p-4">
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-200/60">Sources</div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {Object.entries(sources)
+              .sort((a, b) => b[1] - a[1])
+              .map(([s, n]) => (
+                <Badge key={s} tone="neutral">
+                  {s} · {n}
+                </Badge>
+              ))}
+            {Object.keys(sources).length === 0 ? <div className="text-xs text-slate-200/60">-</div> : null}
+          </div>
+        </div>
       </div>
 
       <Card
@@ -136,7 +152,12 @@ export default function InterfacesPage() {
         subtitle="支持 path/summary/tags 模糊匹配；默认隐藏 /swagger 与 /api.json。"
         right={err ? <Badge tone="bad">{err}</Badge> : <Badge tone="neutral">items: {items.length}</Badge>}
       >
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        {!sources['resume-agent'] ? (
+          <div className="mb-3 rounded-xl border border-amber-300/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-100/90">
+            未拉取到 resume-agent 接口。请确认后端可访问 `OPS_PORTAL_RESUME_OPENAPI_URL`（默认 `http://127.0.0.1:9000/openapi.json`）。
+          </div>
+        ) : null}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
           <div className="md:col-span-2">
             <div className="mb-1 text-xs text-slate-200/70">search</div>
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="例如: /api/admin  或  login  或  loki" />
@@ -163,6 +184,17 @@ export default function InterfacesPage() {
               ))}
             </Select>
           </div>
+          <div>
+            <div className="mb-1 text-xs text-slate-200/70">source</div>
+            <Select value={source} onChange={(e) => setSource(e.target.value)}>
+              <option value="">All</option>
+              {sourceOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </Select>
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -181,6 +213,7 @@ export default function InterfacesPage() {
               setQ('')
               setMethod('')
               setTag('')
+              setSource('')
               setHideDocs(true)
             }}
             disabled={loading}
@@ -200,6 +233,7 @@ export default function InterfacesPage() {
                 <th className="px-3 py-2">path</th>
                 <th className="px-3 py-2">summary</th>
                 <th className="px-3 py-2">tag</th>
+                <th className="px-3 py-2">source</th>
                 <th className="px-3 py-2 text-right">action</th>
               </tr>
             </thead>
@@ -219,6 +253,7 @@ export default function InterfacesPage() {
                     </td>
                     <td className="px-3 py-2 text-slate-100">{it.summary || <span className="text-slate-200/50">-</span>}</td>
                     <td className="px-3 py-2 text-slate-200/75">{tag1 || <span className="text-slate-200/50">_</span>}</td>
+                    <td className="px-3 py-2 text-slate-200/75">{it.source || <span className="text-slate-200/50">_</span>}</td>
                     <td className="px-3 py-2 text-right">
                       <Button
                         tone="ghost"
@@ -237,7 +272,7 @@ export default function InterfacesPage() {
               })}
               {items.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-6 text-center text-slate-200/60" colSpan={5}>
+                  <td className="px-3 py-6 text-center text-slate-200/60" colSpan={6}>
                     无数据
                   </td>
                 </tr>
