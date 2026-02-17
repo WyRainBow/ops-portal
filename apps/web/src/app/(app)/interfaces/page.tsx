@@ -244,14 +244,15 @@ export default function InterfacesPage() {
                 <th className="px-3 py-2">summary</th>
                 <th className="px-3 py-2">tag</th>
                 <th className="px-3 py-2">source</th>
-                <th className="px-3 py-2 text-right">action</th>
+                <th className="sticky right-0 min-w-[100px] shrink-0 bg-white/5 px-3 py-2 text-right">action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {items.map((it) => {
+              {items.map((it, index) => {
                 const tag1 = (it.tags && it.tags[0]) || ''
+                const rowKey = `${it.source ?? 'unknown'}-${it.method}-${it.path}-${index}`
                 return (
-                  <tr key={`${it.method} ${it.path}`} className="hover:bg-white/5">
+                  <tr key={rowKey} className="group hover:bg-white/5">
                     <td className="px-3 py-2">
                       <Badge tone={methodTone(it.method)}>{it.method}</Badge>
                     </td>
@@ -264,7 +265,7 @@ export default function InterfacesPage() {
                     <td className="px-3 py-2 text-slate-100">{it.summary || <span className="text-slate-200/50">-</span>}</td>
                     <td className="px-3 py-2 text-slate-200/75">{tag1 || <span className="text-slate-200/50">_</span>}</td>
                     <td className="px-3 py-2 text-slate-200/75">{it.source || <span className="text-slate-200/50">_</span>}</td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="sticky right-0 min-w-[100px] shrink-0 bg-slate-900/95 px-3 py-2 text-right group-hover:bg-white/5">
                       <Button
                         tone="ghost"
                         type="button"

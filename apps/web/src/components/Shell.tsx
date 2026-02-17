@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { clearToken, getToken, parseJwtRole } from '../lib/auth'
 
@@ -22,8 +23,11 @@ const nav = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const token = getToken()
-  const role = parseJwtRole(token)
+  // 仅客户端挂载后读取 role，避免 SSR 与客户端 hydration 不一致（getToken 在服务端为 null）
+  const [role, setRole] = useState<string>('—')
+  useEffect(() => {
+    setRole(parseJwtRole(getToken()))
+  }, [])
 
   const logout = () => {
     clearToken()
