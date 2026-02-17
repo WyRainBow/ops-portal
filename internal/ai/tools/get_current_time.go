@@ -3,6 +3,7 @@ package tools
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -64,8 +65,21 @@ func NewGetCurrentTimeTool() tool.InvokableTool {
 		})
 
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("[ERROR] Get current time tool creation failed: %v", err)
+		return createErrorTimeTool(err)
 	}
 
+	return t
+}
+
+// createErrorTimeTool returns a tool that always returns an error
+func createErrorTimeTool(createErr error) tool.InvokableTool {
+	t, _ := utils.InferOptionableTool(
+		"get_current_time",
+		"Error tool - Time tool failed to initialize",
+		func(ctx context.Context, input any, opts ...tool.Option) (output string, err error) {
+			return fmt.Sprintf(`{"success":false,"error":"Tool initialization failed: %v"}`, createErr.Error()), nil
+		},
+	)
 	return t
 }

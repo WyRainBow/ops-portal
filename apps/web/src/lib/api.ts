@@ -256,6 +256,87 @@ export async function chat(token: string, payload: any) {
   })
 }
 
+/**
+ * Stream chat response using Server-Sent Events.
+ * Returns a promise that resolves when the stream ends.
+ */
+export async function streamChat(
+  token: string,
+  payload: { question: string; id?: string },
+  callbacks: {
+    onMessage?: (chunk: string) => void
+    onDone?: () => void
+    onError?: (error: string) => void
+  }
+): Promise<void> {
+  const response = await fetch('/api/chat/chat_stream', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    callbacks.onError?.(`HTTP ${response.status}: ${error}`)
+    return
+  }
+
+  const reader = response.body?.getReader()
+  const decoder = new TextDecoder()
+
+  if (!reader) {
+    callbacks.onError?.('Response body is not readable')
+    return
+  }
+
+  let buffer = ''
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+
+      if (done) {
+        callbacks.onDone?.()
+        break
+      }
+
+      // Decode and process SSE data
+      buffer += decoder.decode(value, { stream: true })
+
+      // Split by lines and process complete SSE messages
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || '' // Keep incomplete line in buffer
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+
+        // SSE format: event: xxx, data: yyy, id: zzz
+        if (trimmed.startsWith('data:')) {
+          const data = trimmed.slice(5).trim()
+
+          // Parse JSON data
+          try {
+            // The backend sends simple string chunks, not JSON
+            if (data) {
+              callbacks.onMessage?.(data)
+            }
+          } catch {
+            // If not JSON, just send as-is
+            callbacks.onMessage?.(data)
+          }
+        }
+      }
+    }
+  } catch (error: any) {
+    callbacks.onError?.(error.message)
+  } finally {
+    reader.releaseLock()
+  }
+}
+
 export async function aiOps(token: string) {
   return request<any>(`/api/ai_ops`, {
     method: 'POST',

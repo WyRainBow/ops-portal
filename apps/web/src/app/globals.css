@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
-:root {
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="light"] {
   --bg0: #f8f8f7;
   --bg1: #ffffff;
   --paper0: #ffffff;
@@ -15,6 +18,21 @@
   --warning: #b54708;
 }
 
+[data-theme="dark"] {
+  --bg0: #0f1115;
+  --bg1: #161b22;
+  --paper0: #161b22;
+  --paper1: #1c2128;
+  --ink: #e6edf3;
+  --muted: #8b949e;
+  --stroke: #30363d;
+  --stroke2: #21262d;
+  --accent: #e6edf3;
+  --accent2: #58a6ff;
+  --danger: #f85149;
+  --warning: #d29922;
+}
+
 @theme inline {
   --color-background: var(--bg0);
   --color-foreground: var(--ink);
@@ -26,6 +44,10 @@ body {
   color: var(--ink);
   font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
   letter-spacing: 0.004em;
+}
+
+[data-theme="dark"] body {
+  background: linear-gradient(180deg, #0f1115 0%, #161b22 100%);
 }
 
 code, pre, kbd, samp {
@@ -80,39 +102,74 @@ code, pre, kbd, samp {
   background-image: linear-gradient(180deg, rgba(17, 24, 39, 0.02), rgba(17, 24, 39, 0));
 }
 
-/* Light-mode compatibility overrides for legacy dark utility classes used across pages. */
-.text-slate-100,
-.text-slate-100\/90 {
+/* Light-mode: legacy dark utility classes overridden to light. */
+[data-theme="light"] .text-slate-100,
+[data-theme="light"] .text-slate-100\/90 {
   color: #0f1115 !important;
 }
-.text-slate-200\/80,
-.text-slate-200\/75,
-.text-slate-200\/70,
-.text-slate-200\/65 {
+[data-theme="light"] .text-slate-200\/80,
+[data-theme="light"] .text-slate-200\/75,
+[data-theme="light"] .text-slate-200\/70,
+[data-theme="light"] .text-slate-200\/65 {
   color: #475467 !important;
 }
-.text-slate-200\/60,
-.text-slate-200\/50,
-.text-slate-200\/40,
-.text-slate-300\/70 {
+[data-theme="light"] .text-slate-200\/60,
+[data-theme="light"] .text-slate-200\/50,
+[data-theme="light"] .text-slate-200\/40,
+[data-theme="light"] .text-slate-300\/70 {
   color: #667085 !important;
 }
-.border-white\/10 {
+[data-theme="light"] .border-white\/10 {
   border-color: #e4e7ec !important;
 }
-.border-white\/5 {
+[data-theme="light"] .border-white\/5 {
   border-color: #eef1f4 !important;
 }
-.bg-white\/5 {
+[data-theme="light"] .bg-white\/5 {
   background-color: #f7f8fa !important;
 }
-.hover\:bg-white\/5:hover {
+[data-theme="light"] .hover\:bg-white\/5:hover {
   background-color: #f2f4f7 !important;
 }
-.bg-black\/40,
-.bg-black\/30,
-.bg-black\/25,
-.bg-black\/20,
-.bg-black\/15 {
+[data-theme="light"] .bg-black\/40,
+[data-theme="light"] .bg-black\/30,
+[data-theme="light"] .bg-black\/25,
+[data-theme="light"] .bg-black\/20,
+[data-theme="light"] .bg-black\/15 {
   background-color: #f8fafc !important;
 }
+
+/* Dark mode: invert common utilities so content stays readable. */
+[data-theme="dark"] .text-slate-900 { color: #e6edf3 !important; }
+[data-theme="dark"] .text-slate-600 { color: #8b949e !important; }
+[data-theme="dark"] .text-slate-100,
+[data-theme="dark"] .text-slate-100\/90 { color: #e6edf3 !important; }
+[data-theme="dark"] .text-slate-200\/80,
+[data-theme="dark"] .text-slate-200\/75,
+[data-theme="dark"] .text-slate-200\/70,
+[data-theme="dark"] .text-slate-200\/65,
+[data-theme="dark"] .text-slate-200\/60,
+[data-theme="dark"] .text-slate-200\/50,
+[data-theme="dark"] .text-slate-200\/40,
+[data-theme="dark"] .text-slate-300\/70 { color: #8b949e !important; }
+[data-theme="dark"] .border-slate-200,
+[data-theme="dark"] .border-slate-300 { border-color: #30363d !important; }
+[data-theme="dark"] .border-white\/10 { border-color: #30363d !important; }
+[data-theme="dark"] .border-white\/5 { border-color: #21262d !important; }
+[data-theme="dark"] .bg-white { background-color: #21262d !important; }
+[data-theme="dark"] .bg-slate-100 { background-color: #21262d !important; }
+[data-theme="dark"] .bg-slate-50 { background-color: #161b22 !important; }
+[data-theme="dark"] .bg-white\/5 { background-color: rgba(255,255,255,0.06) !important; }
+[data-theme="dark"] .hover\:bg-white\/5:hover,
+[data-theme="dark"] .group-hover\:bg-white\/5:hover { background-color: rgba(255,255,255,0.08) !important; }
+[data-theme="dark"] .hover\:bg-slate-50:hover,
+[data-theme="dark"] .hover\:bg-slate-100:hover { background-color: #21262d !important; }
+[data-theme="dark"] .bg-black\/40,
+[data-theme="dark"] .bg-black\/30,
+[data-theme="dark"] .bg-black\/25,
+[data-theme="dark"] .bg-black\/20,
+[data-theme="dark"] .bg-black\/15 { background-color: rgba(0,0,0,0.25) !important; }
+[data-theme="dark"] .ops-input { background: #21262d; border-color: #30363d; }
+[data-theme="dark"] .ops-input:focus-within { border-color: #58a6ff; box-shadow: 0 0 0 4px rgba(88,166,255,0.15); }
+[data-theme="dark"] .ops-grid { background-image: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); }
+[data-theme="dark"] ::selection { background: rgba(88,166,255,0.25); color: #e6edf3; }

@@ -3,12 +3,14 @@ package tools
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/WyRainBow/ops-portal/internal/store"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type DBReadonlyQueryInput struct {
@@ -51,14 +53,28 @@ func NewDBReadonlyQueryTool() tool.InvokableTool {
 		},
 	)
 	if err != nil {
-		panic(err)
+		// Log error instead of panic
+		g.Log().Errorf(context.Background(), "db_readonly_query tool creation failed: %v", err)
+		return createErrorDBTool(err)
 	}
 	return t
 }
 
+// createErrorDBTool returns a tool that always returns an error
+func createErrorDBTool(createErr error) tool.InvokableTool {
+	t, _ := utils.InferOptionableTool(
+		"db_readonly_query",
+		"Error tool - DB query tool failed to initialize",
+		func(ctx context.Context, input any, opts ...tool.Option) (output string, err error) {
+			return fmt.Sprintf(`{"success":false,"error":"Tool initialization failed: %v"}`, createErr.Error()), nil
+		},
+	)
+	return t
+}
+
 var (
-	denyRE  = regexp.MustCompile(`(?i)\\b(insert|update|delete|drop|alter|truncate|create|grant|revoke)\\b`)
-	semiRE  = regexp.MustCompile(`;`)
+	denyRE   = regexp.MustCompile(`(?i)\\b(insert|update|delete|drop|alter|truncate|create|grant|revoke)\\b`)
+	semiRE   = regexp.MustCompile(`;`)
 	allowTbl = []string{"users", "members", "api_request_logs", "api_error_logs", "api_trace_spans", "permission_audit_logs"}
 )
 
@@ -95,4 +111,3 @@ type simpleErr string
 func (e simpleErr) Error() string { return string(e) }
 
 func errf(msg string) error { return simpleErr(msg) }
-

@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	v1 "github.com/WyRainBow/ops-portal/api/admin/v1"
@@ -115,10 +116,9 @@ func (c *ControllerV1) TraceDetail(ctx context.Context, req *v1.TraceDetailReq) 
 			if s.ParentSpanID != nil {
 				parent = *s.ParentSpanID
 			}
-			// tags is jsonb; leave as map if possible.
 			tags := map[string]any{}
-			if m, ok := s.Tags.(map[string]any); ok {
-				tags = m
+			if len(s.Tags) > 0 {
+				_ = json.Unmarshal(s.Tags, &tags)
 			}
 			out = append(out, v1.TraceSpanItem{
 				SpanID:       s.SpanID,

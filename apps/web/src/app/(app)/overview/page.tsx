@@ -2,22 +2,29 @@
 
 import { useEffect, useState } from 'react'
 import { getToken } from '../../../lib/auth'
-import { getOverview } from '../../../lib/api'
+import { getOverview, getApiRoutes } from '../../../lib/api'
 import { Badge, Card } from '../../../components/Ui'
 
 export default function OverviewPage() {
   const [data, setData] = useState<any>(null)
+  const [interfaceTotal, setInterfaceTotal] = useState<number | null>(null)
   const [err, setErr] = useState<string | null>(null)
 
   useEffect(() => {
     const run = async () => {
+      const token = getToken() || ''
+      if (!token) return
       try {
-        const token = getToken() || ''
-        if (!token) return
         const d = await getOverview(token)
         setData(d)
       } catch (e: any) {
         setErr(e?.message || '加载失败')
+      }
+      try {
+        const routes = await getApiRoutes(token, { page_size: 1 })
+        setInterfaceTotal(Number(routes?.total ?? 0))
+      } catch {
+        setInterfaceTotal(null)
       }
     }
     void run()
@@ -35,6 +42,7 @@ export default function OverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <Kpi title="接口总数" value={interfaceTotal} />
         <Kpi title="用户总数" value={data?.total_users} />
         <Kpi title="成员总数" value={data?.total_members} />
         <Kpi title="24h 请求数" value={data?.requests_24h} />

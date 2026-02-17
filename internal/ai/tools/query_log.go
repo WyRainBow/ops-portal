@@ -116,8 +116,21 @@ func NewLokiQueryRangeTool() tool.InvokableTool {
 		},
 	)
 	if err != nil {
-		panic(err)
+		// Instead of panic, return an error tool
+		return createErrorLokiTool(err)
 	}
+	return t
+}
+
+// createErrorLokiTool returns a tool that always returns an error
+func createErrorLokiTool(createErr error) tool.InvokableTool {
+	t, _ := utils.InferOptionableTool(
+		"query_loki_logs",
+		"Error tool - Loki query tool failed to initialize",
+		func(ctx context.Context, input any, opts ...tool.Option) (output string, err error) {
+			return fmt.Sprintf(`{"success":false,"error":"Tool initialization failed: %s"}`, escapeJSON(createErr.Error())), nil
+		},
+	)
 	return t
 }
 

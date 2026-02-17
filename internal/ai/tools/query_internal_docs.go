@@ -3,6 +3,7 @@ package tools
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -61,8 +62,22 @@ func NewQueryInternalDocsTool() tool.InvokableTool {
 			return string(b), nil
 		})
 	if err != nil {
-		panic(err)
+		// Log error instead of panic - note: ctx not available here, use stdout
+		g.Log().Errorf(context.Background(), "query_internal_docs tool creation failed: %v", err)
+		return createErrorDocsTool(err)
 	}
+	return t
+}
+
+// createErrorDocsTool returns a tool that always returns an error
+func createErrorDocsTool(createErr error) tool.InvokableTool {
+	t, _ := utils.InferOptionableTool(
+		"query_internal_docs",
+		"Error tool - Internal docs tool failed to initialize",
+		func(ctx context.Context, input any, opts ...tool.Option) (output string, err error) {
+			return fmt.Sprintf(`{"success":false,"error":"Tool initialization failed: %v"}`, createErr.Error()), nil
+		},
+	)
 	return t
 }
 

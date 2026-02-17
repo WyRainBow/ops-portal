@@ -18,6 +18,7 @@ const nav = [
   { href: '/permissions', label: '权限审计', icon: IconShield },
   { href: '/assistant/chat', label: '助手对话', icon: IconChat },
   { href: '/assistant/aiops', label: '告警分析', icon: IconAIOps },
+  { href: '/settings', label: '设置', icon: IconGear },
 ]
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -282,6 +283,15 @@ function IconAIOps({ active }: { active: boolean }) {
       <path d="M7 13l2-2" />
       <path d="M17 13l-2-2" />
       <path d="M12 7a3 3 0 1 0 0 6a3 3 0 0 0 0-6z" />
+    </IconBase>
+  )
+}
+
+function IconGear({ active }: { active: boolean }) {
+  return (
+    <IconBase active={active}>
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </IconBase>
   )
 }

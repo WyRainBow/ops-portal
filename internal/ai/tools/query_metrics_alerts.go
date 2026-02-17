@@ -174,7 +174,26 @@ func NewPrometheusAlertsQueryTool() tool.InvokableTool {
 			return string(jsonBytes), nil
 		})
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("[ERROR] Prometheus alerts tool creation failed: %v", err)
+		return createErrorPrometheusTool(err)
 	}
+	return t
+}
+
+// createErrorPrometheusTool returns a tool that always returns an error
+func createErrorPrometheusTool(createErr error) tool.InvokableTool {
+	t, _ := utils.InferOptionableTool(
+		"query_prometheus_alerts",
+		"Error tool - Prometheus alerts tool failed to initialize",
+		func(ctx context.Context, input any, opts ...tool.Option) (output string, err error) {
+			alertsOut := PrometheusAlertsOutput{
+				Success: false,
+				Error:   fmt.Sprintf("Tool initialization failed: %v", createErr),
+				Message: "Failed to initialize tool",
+			}
+			jsonBytes, _ := json.MarshalIndent(alertsOut, "", "  ")
+			return string(jsonBytes), nil
+		},
+	)
 	return t
 }

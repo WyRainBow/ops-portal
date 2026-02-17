@@ -69,7 +69,7 @@ type APITraceSpan struct {
 	EndTime     time.Time   `gorm:"column:end_time"`
 	DurationMs  float64     `gorm:"column:duration_ms"`
 	Status      string      `gorm:"column:status"`
-	Tags        any         `gorm:"column:tags"`
+	Tags        []byte      `gorm:"column:tags;type:jsonb"` // JSONB: scan as []byte, unmarshal in handler
 	CreatedAt   *time.Time  `gorm:"column:created_at"`
 }
 

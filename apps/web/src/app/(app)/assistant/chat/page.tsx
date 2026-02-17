@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react'
 import { getToken } from '../../../../lib/auth'
-import { chat } from '../../../../lib/api'
+import { chat, streamChat } from '../../../../lib/api'
 import { Badge, Button, Card, TextArea } from '../../../../components/Ui'
 
 type Msg = { role: 'user' | 'assistant'; content: string; ts: number }
@@ -12,6 +12,7 @@ export default function AssistantChatPage() {
   const [qid, setQid] = useState(() => String(Date.now()))
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [useStreaming, setUseStreaming] = useState(true)
   const [err, setErr] = useState<string | null>(null)
   const [msgs, setMsgs] = useState<Msg[]>([])
   const boxRef = useRef<HTMLDivElement | null>(null)
@@ -25,6 +26,12 @@ export default function AssistantChatPage() {
     [msgs],
   )
 
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      boxRef.current?.scrollTo({ top: boxRef.current.scrollHeight, behavior: 'smooth' })
+    }, 50)
+  }
+
   const send = async () => {
     const q = input.trim()
     if (!q) return
@@ -33,15 +40,59 @@ export default function AssistantChatPage() {
     setLoading(true)
     const now = Date.now()
     setMsgs((m) => [...m, { role: 'user', content: q, ts: now }])
+
+    // Add placeholder for assistant response
+    const assistantIdx = msgs.length + 1
+    setMsgs((m) => [...m, { role: 'assistant', content: '', ts: Date.now() }])
+
     try {
-      const r = await chat(token, { id: qid, question: q })
-      setMsgs((m) => [...m, { role: 'assistant', content: r?.answer || '', ts: Date.now() }])
-      setTimeout(() => {
-        boxRef.current?.scrollTo({ top: boxRef.current.scrollHeight, behavior: 'smooth' })
-      }, 50)
+      if (useStreaming) {
+        // Streaming chat
+        let fullResponse = ''
+        await streamChat(
+          token,
+          { id: qid, question: q },
+          {
+            onMessage: (chunk) => {
+              fullResponse += chunk
+              setMsgs((prev) => {
+                const newMsgs = [...prev]
+                if (newMsgs[assistantIdx]) {
+                  newMsgs[assistantIdx] = {
+                    ...newMsgs[assistantIdx],
+                    content: fullResponse,
+                  }
+                }
+                return newMsgs
+              })
+              scrollToBottom()
+            },
+            onDone: () => {
+              setLoading(false)
+              scrollToBottom()
+            },
+            onError: (error) => {
+              setErr(error)
+              setLoading(false)
+            },
+          }
+        )
+      } else {
+        // Non-streaming chat
+        const r = await chat(token, { id: qid, question: q })
+        setMsgs((m) => {
+          const newMsgs = [...m]
+          newMsgs[assistantIdx] = {
+            ...newMsgs[assistantIdx],
+            content: r?.answer || '',
+          }
+          return newMsgs
+        })
+        scrollToBottom()
+        setLoading(false)
+      }
     } catch (e: any) {
       setErr(e?.message || String(e))
-    } finally {
       setLoading(false)
     }
   }
@@ -52,7 +103,15 @@ export default function AssistantChatPage() {
         <div>
           <div className="text-xs uppercase tracking-[0.22em] text-slate-300/70">Assistant</div>
           <div className="mt-1 text-2xl font-semibold">运维助手（只读）</div>
-          <div className="mt-2 text-sm text-slate-200/70">v1：先走非流式对话（POST /api/chat）。后续可加 SSE（/api/chat_stream）。</div>
+          <div className="mt-2 flex items-center gap-4 text-sm text-slate-200/70">
+            <span>流式对话已启用</span>
+            <button
+              onClick={() => setUseStreaming(!useStreaming)}
+              className={`px-2 py-1 rounded text-xs ${useStreaming ? 'bg-green-500/20 text-green-400' : 'bg-slate-500/20 text-slate-400'}`}
+            >
+              {useStreaming ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {err ? <Badge tone="bad">{err}</Badge> : null}
@@ -84,7 +143,9 @@ export default function AssistantChatPage() {
                       <Badge tone={m.role === 'user' ? 'neutral' : 'ok'}>{m.role === 'user' ? 'YOU' : 'OPS'}</Badge>
                       <div className="text-xs text-slate-200/60">{new Date(m.ts).toLocaleTimeString()}</div>
                     </div>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">{m.content}</div>
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
+                      {m.content || (loading && idx === msgs.length - 1 ? '⋯' : '')}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -98,6 +159,11 @@ export default function AssistantChatPage() {
               rows={4}
               placeholder="输入你的问题…"
               className="text-sm leading-relaxed"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !loading) {
+                  send()
+                }
+              }}
             />
             <div className="flex items-center justify-between gap-3">
               <div className="text-xs text-slate-200/60">session id: {qid}</div>
@@ -109,7 +175,7 @@ export default function AssistantChatPage() {
         </Card>
 
         <div className="lg:col-span-2 space-y-6">
-          <Card title="Transcript" subtitle="便于复制粘贴（也可用于后续接入“导出为工单”）。" right={
+          <Card title="Transcript" subtitle='便于复制粘贴（也可用于后续接入"导出为工单"）。' right={
             <Button
               tone="ghost"
               type="button"
