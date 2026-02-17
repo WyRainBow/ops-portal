@@ -13,11 +13,18 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/glog"
 )
 
 func main() {
-	// Keep GoFrame config compatibility. Prefer env overrides in production.
+	g.Log().SetLevel(glog.LEVEL_WARN)
+
 	s := g.Server()
+
+	// Reduce noisy startup/access output for local ops use.
+	s.SetDumpRouterMap(false)
+	s.SetAccessLogEnabled(false)
+	s.SetLogLevel("warning")
 
 	s.Group("/api", func(group *ghttp.RouterGroup) {
 		group.Middleware(middleware.CORSMiddleware)
@@ -29,7 +36,6 @@ func main() {
 		group.Bind(observability.NewV1())
 	})
 
-	// Default to localhost-only in production; bind is handled by reverse proxy.
 	port := 18081
 	if v := os.Getenv("OPS_PORTAL_API_PORT"); v != "" {
 		if p, err := strconv.Atoi(v); err == nil && p > 0 {
@@ -37,8 +43,6 @@ func main() {
 		}
 	}
 
-	// Default to localhost-only when running on host.
-	// If running in Docker, set OPS_PORTAL_API_ADDR=0.0.0.0 so nginx/web can reach it.
 	addr := os.Getenv("OPS_PORTAL_API_ADDR")
 	if strings.TrimSpace(addr) == "" {
 		addr = "127.0.0.1"

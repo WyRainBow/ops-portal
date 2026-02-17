@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${apiBase}/api/:path*`,
       },
+      // 代理 /swagger 到后端 Swagger UI，使「打开 Swagger」按钮可用
+      { source: "/swagger", destination: `${apiBase}/swagger` },
+      { source: "/swagger/", destination: `${apiBase}/swagger/` },
+      { source: "/swagger/:path*", destination: `${apiBase}/swagger/:path*` },
+      // 代理 OpenAPI 规范，ReDoc/Swagger 会从当前域名请求 /api.json
+      { source: "/api.json", destination: `${apiBase}/api.json` },
     ];
   },
 };
