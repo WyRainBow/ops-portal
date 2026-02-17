@@ -29,6 +29,7 @@ export default function InterfacesPage() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [data, setData] = useState<any | null>(null)
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
   const query = useMemo(() => {
     return {
@@ -265,17 +266,23 @@ export default function InterfacesPage() {
                     <td className="px-3 py-2 text-slate-100">{it.summary || <span className="text-slate-200/50">-</span>}</td>
                     <td className="px-3 py-2 text-slate-200/75">{tag1 || <span className="text-slate-200/50">_</span>}</td>
                     <td className="px-3 py-2 text-slate-200/75">{it.source || <span className="text-slate-200/50">_</span>}</td>
-                    <td className="sticky right-0 min-w-[100px] shrink-0 bg-slate-900/95 px-3 py-2 text-right group-hover:bg-white/5">
+                    <td className="sticky right-0 min-w-[100px] shrink-0 bg-transparent px-3 py-2 text-right group-hover:bg-white/5">
                       <Button
-                        tone="ghost"
+                        tone={copiedKey === rowKey ? 'ok' : 'ghost'}
                         type="button"
                         onClick={async () => {
                           const curl = curlFor(it.method, it.path)
-                          await navigator.clipboard.writeText(curl)
+                          try {
+                            await navigator.clipboard.writeText(curl)
+                            setCopiedKey(rowKey)
+                            setTimeout(() => setCopiedKey(null), 1500)
+                          } catch {
+                            setCopiedKey(null)
+                          }
                         }}
                         title="复制 curl"
                       >
-                        复制 curl
+                        {copiedKey === rowKey ? '已复制' : '复制 curl'}
                       </Button>
                     </td>
                   </tr>
