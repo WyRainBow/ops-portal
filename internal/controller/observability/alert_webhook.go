@@ -1,8 +1,6 @@
 package observability
 
 import (
-	"context"
-
 	"github.com/WyRainBow/ops-portal/internal/ai/alerting"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -22,7 +20,9 @@ func NewAlertWebhookController() *AlertWebhookController {
 
 // Webhook handles incoming Alertmanager webhooks.
 // POST /api/observability/alerts/webhook
-func (c *AlertWebhookController) Webhook(ctx context.Context, req *ghttp.Request) {
+func (c *AlertWebhookController) Webhook(req *ghttp.Request) {
+	ctx := req.Context()
+
 	// Read request body
 	data := req.GetBody()
 	if len(data) == 0 {
@@ -72,7 +72,7 @@ func (c *AlertWebhookController) Webhook(ctx context.Context, req *ghttp.Request
 
 // Status returns the current status of the alert queue.
 // GET /api/observability/alerts/status
-func (c *AlertWebhookController) Status(ctx context.Context, req *ghttp.Request) {
+func (c *AlertWebhookController) Status(req *ghttp.Request) {
 	req.Response.WriteJson(g.Map{
 		"success": true,
 		"queue_size": c.queue.Size(),
@@ -82,7 +82,7 @@ func (c *AlertWebhookController) Status(ctx context.Context, req *ghttp.Request)
 
 // ListIncidents returns all incidents.
 // GET /api/observability/alerts/list
-func (c *AlertWebhookController) ListIncidents(ctx context.Context, req *ghttp.Request) {
+func (c *AlertWebhookController) ListIncidents(req *ghttp.Request) {
 	store := alerting.GlobalStore()
 	incidents := store.List()
 
@@ -95,7 +95,7 @@ func (c *AlertWebhookController) ListIncidents(ctx context.Context, req *ghttp.R
 
 // ListFiring returns only firing incidents.
 // GET /api/observability/alerts/firing
-func (c *AlertWebhookController) ListFiring(ctx context.Context, req *ghttp.Request) {
+func (c *AlertWebhookController) ListFiring(req *ghttp.Request) {
 	store := alerting.GlobalStore()
 	incidents := store.ListFiring()
 
@@ -108,7 +108,7 @@ func (c *AlertWebhookController) ListFiring(ctx context.Context, req *ghttp.Requ
 
 // GetIncident retrieves a specific incident.
 // GET /api/observability/alerts/:id
-func (c *AlertWebhookController) GetIncident(ctx context.Context, req *ghttp.Request) {
+func (c *AlertWebhookController) GetIncident(req *ghttp.Request) {
 	id := req.Get("id").String()
 	if id == "" {
 		req.Response.WriteJson(g.Map{

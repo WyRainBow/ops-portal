@@ -25,9 +25,13 @@ func NewExecutor(ctx context.Context) (adk.Agent, error) {
 	toolList = append(toolList, tools.NewDBReadonlyQueryTool())
 	// time
 	toolList = append(toolList, tools.NewGetCurrentTimeTool())
-	execModel, err := models.OpenAIForDeepSeekV3Quick(ctx)
+	// Try DashScope Qwen first (Aliyun), fallback to DeepSeek
+	execModel, err := models.OpenAIForDashScopeQwen(ctx)
 	if err != nil {
-		return nil, err
+		execModel, err = models.OpenAIForDeepSeekV3Quick(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return planexecute.NewExecutor(ctx, &planexecute.ExecutorConfig{
 		Model: execModel,

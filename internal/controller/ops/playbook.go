@@ -1,8 +1,6 @@
 package ops
 
 import (
-	"context"
-
 	"github.com/WyRainBow/ops-portal/internal/ops/playbook"
 	"github.com/WyRainBow/ops-portal/utility/middleware"
 	"github.com/gogf/gf/v2/frame/g"
@@ -14,7 +12,7 @@ type PlaybookController struct{}
 
 // ListPlaybooks lists all available playbooks.
 // GET /api/ops/playbooks
-func (c *PlaybookController) ListPlaybooks(ctx context.Context, req *ghttp.Request) {
+func (c *PlaybookController) ListPlaybooks(req *ghttp.Request) {
 	playbooks := playbook.GlobalExecutor().List()
 
 	req.Response.WriteJson(g.Map{
@@ -26,7 +24,7 @@ func (c *PlaybookController) ListPlaybooks(ctx context.Context, req *ghttp.Reque
 
 // GetPlaybook retrieves a specific playbook.
 // GET /api/ops/playbooks/:id
-func (c *PlaybookController) GetPlaybook(ctx context.Context, req *ghttp.Request) {
+func (c *PlaybookController) GetPlaybook(req *ghttp.Request) {
 	id := req.Get("id").String()
 
 	pb, ok := playbook.GlobalExecutor().Get(id)
@@ -55,7 +53,9 @@ type ExecuteRequest struct {
 
 // ExecutePlaybook executes a playbook.
 // POST /api/ops/playbooks/:id/execute
-func (c *PlaybookController) ExecutePlaybook(ctx context.Context, req *ghttp.Request) {
+func (c *PlaybookController) ExecutePlaybook(req *ghttp.Request) {
+	ctx := req.Context()
+
 	var input ExecuteRequest
 	if err := req.Parse(&input); err != nil {
 		req.Response.WriteJson(g.Map{
@@ -104,7 +104,7 @@ func (c *PlaybookController) ExecutePlaybook(ctx context.Context, req *ghttp.Req
 
 // GetExecution retrieves an execution result.
 // GET /api/ops/executions/:id
-func (c *PlaybookController) GetExecution(ctx context.Context, req *ghttp.Request) {
+func (c *PlaybookController) GetExecution(req *ghttp.Request) {
 	id := req.Get("id").String()
 
 	result, ok := playbook.GlobalExecutor().GetExecution(id)
@@ -125,7 +125,7 @@ func (c *PlaybookController) GetExecution(ctx context.Context, req *ghttp.Reques
 
 // GetAuditLog retrieves the audit log.
 // GET /api/ops/audit/log
-func (c *PlaybookController) GetAuditLog(ctx context.Context, req *ghttp.Request) {
+func (c *PlaybookController) GetAuditLog(req *ghttp.Request) {
 	log := playbook.GlobalExecutor().GetAuditLog()
 
 	req.Response.WriteJson(g.Map{
@@ -136,22 +136,18 @@ func (c *PlaybookController) GetAuditLog(ctx context.Context, req *ghttp.Request
 }
 
 // RegisterOpsRoutes registers ops routes.
+// Note: The group passed in should already be the /api/ops group.
 func RegisterOpsRoutes(group *ghttp.RouterGroup) {
 	controller := &PlaybookController{}
 
-	group.Group("/ops", func(opsGroup *ghttp.RouterGroup) {
-		// Require admin role for all ops operations
-		opsGroup.Middleware(middleware.AdminAuth())
+	// Playbook management
+	group.GET("/playbooks", controller.ListPlaybooks)
+	group.GET("/playbooks/:id", controller.GetPlaybook)
+	group.POST("/playbooks/:id/execute", controller.ExecutePlaybook)
 
-		// Playbook management
-		opsGroup.GET("/playbooks", controller.ListPlaybooks)
-		opsGroup.GET("/playbooks/:id", controller.GetPlaybook)
-		opsGroup.POST("/playbooks/:id/execute", controller.ExecutePlaybook)
+	// Execution tracking
+	group.GET("/executions/:id", controller.GetExecution)
 
-		// Execution tracking
-		opsGroup.GET("/executions/:id", controller.GetExecution)
-
-		// Audit log
-		opsGroup.GET("/audit/log", controller.GetAuditLog)
-	})
+	// Audit log
+	group.GET("/audit/log", controller.GetAuditLog)
 }

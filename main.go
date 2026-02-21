@@ -83,13 +83,14 @@ func main() {
 
 		// Observability endpoints - require admin or member role
 		group.Group("/observability", func(obsGroup *ghttp.RouterGroup) {
+			// Webhook endpoint must be public (for Alertmanager)
+			observability.RegisterAlertWebhookRoutes(obsGroup)
+
+			// Other observability endpoints require auth
 			obsGroup.Middleware(middleware.JWTAuth(nil))
 			// Role checking is done in handlers using RequireAnyRole
 			obsGroup.Middleware(middleware.ResponseMiddleware)
 			obsGroup.Bind(observability.NewV1())
-
-			// Register alert webhook routes
-			observability.RegisterAlertWebhookRoutes(obsGroup)
 		})
 
 		// Ops endpoints - require admin role for playbook execution

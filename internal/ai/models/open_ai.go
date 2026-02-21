@@ -73,3 +73,33 @@ func getCfgOrEnv(ctx context.Context, cfgKey string, envKey string) (string, err
 	}
 	return strings.TrimSpace(v.String()), nil
 }
+
+// OpenAIForDashScopeQwen creates a chat model using DashScope (Aliyun) Qwen via OpenAI compatible API
+// DashScope provides OpenAI-compatible API at https://dashscope.aliyuncs.com/compatible-mode/v1
+func OpenAIForDashScopeQwen(ctx context.Context) (cm model.ToolCallingChatModel, err error) {
+	// Default to qwen-max for reasoning capabilities
+	m, err := getCfgOrEnv(ctx, "dashscope_chat_model.model", "DASHSCOPE_MODEL")
+	if err != nil {
+		m = "qwen-max" // Default model
+	}
+	k, err := getCfgOrEnv(ctx, "dashscope_chat_model.api_key", "DASHSCOPE_API_KEY")
+	if err != nil {
+		return nil, err
+	}
+	// DashScope OpenAI compatible endpoint
+	u, err := getCfgOrEnv(ctx, "dashscope_chat_model.base_url", "DASHSCOPE_BASE_URL")
+	if err != nil {
+		u = "https://dashscope.aliyuncs.com/compatible-mode/v1" // Default base URL
+	}
+
+	config := &openai.ChatModelConfig{
+		Model:   m,
+		APIKey:  k,
+		BaseURL: u,
+	}
+	cm, err = openai.NewChatModel(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+	return cm, nil
+}

@@ -9,9 +9,13 @@ import (
 )
 
 func NewRePlanAgent(ctx context.Context) (adk.Agent, error) {
-	model, err := models.OpenAIForDeepSeekV31Think(ctx)
+	// Try DashScope Qwen first (Aliyun), fallback to DeepSeek
+	model, err := models.OpenAIForDashScopeQwen(ctx)
 	if err != nil {
-		return nil, err
+		model, err = models.OpenAIForDeepSeekV31Think(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return planexecute.NewReplanner(ctx, &planexecute.ReplannerConfig{
 		ChatModel: model,
