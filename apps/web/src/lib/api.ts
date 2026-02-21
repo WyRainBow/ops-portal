@@ -385,3 +385,32 @@ export async function getAuditLog(token: string) {
     headers: { Authorization: `Bearer ${token}` },
   })
 }
+
+// Knowledge API
+export async function uploadDocument(token: string, file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch('/api/chat/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(error || `HTTP ${response.status}`)
+  }
+
+  return await response.json()
+}
+
+export async function searchKnowledge(token: string, query: string, topK: number = 5) {
+  return request<any>(`/api/chat`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ question: query }),
+  })
+}

@@ -17,10 +17,13 @@ const nav = [
   { href: '/users', label: '用户', icon: IconUsers },
   { href: '/members', label: '成员', icon: IconId },
   { href: '/permissions', label: '权限审计', icon: IconShield },
+  { href: '/knowledge', label: '知识库', icon: IconBook },
+  { href: '/orchestration', label: '运维编排', icon: IconOrchestration },
   { href: '/ops', label: 'Playbook', icon: IconPlaybook },
   { href: '/assistant/chat', label: '助手对话', icon: IconChat },
   { href: '/assistant/aiops', label: '告警分析', icon: IconAIOps },
   { href: '/settings', label: '设置', icon: IconGear },
+  { href: '/settings/notifications', label: '通知配置', icon: IconBell },
 ]
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -79,9 +82,23 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   ))}
                 </div>
                 <div className="my-2 h-px bg-slate-200" />
+                <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Ops</div>
+                <div className="space-y-1">
+                  {nav.slice(12, 15).map((n) => (
+                    <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
+                  ))}
+                </div>
+                <div className="my-2 h-px bg-slate-200" />
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Assistant</div>
                 <div className="space-y-1">
-                  {nav.slice(12).map((n) => (
+                  {nav.slice(15, 17).map((n) => (
+                    <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
+                  ))}
+                </div>
+                <div className="my-2 h-px bg-slate-200" />
+                <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Settings</div>
+                <div className="space-y-1">
+                  {nav.slice(17).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
@@ -309,6 +326,40 @@ function IconAlert({ active }: { active: boolean }) {
       <path d="M5.6 5.6l12.8 12.8" />
       <path d="M18.4 5.6L5.6 18.4" />
       <circle cx="12" cy="12" r="10" />
+    </IconBase>
+  )
+}
+
+function IconBook({ active }: { active: boolean }) {
+  return (
+    <IconBase active={active}>
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      <path d="M12 6h5" />
+      <path d="M12 10h5" />
+      <path d="M12 14h5" />
+    </IconBase>
+  )
+}
+
+function IconOrchestration({ active }: { active: boolean }) {
+  return (
+    <IconBase active={active}>
+      <path d="M12 2l-3 5h6l-3-5z" />
+      <path d="M5 9l-3 5h6l-3-5z" />
+      <path d="M19 9l-3 5h6l-3-5z" />
+      <path d="M9 14l-3 5h6l-3-5z" />
+      <path d="M15 14l-3 5h6l-3-5z" />
+      <path d="M12 9v5" />
+    </IconBase>
+  )
+}
+
+function IconBell({ active }: { active: boolean }) {
+  return (
+    <IconBase active={active}>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h12s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </IconBase>
   )
 }
