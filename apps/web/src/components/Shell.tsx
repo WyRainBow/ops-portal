@@ -13,9 +13,11 @@ const nav = [
   { href: '/logs/requests', label: '请求日志', icon: IconRoute },
   { href: '/logs/errors', label: '错误日志', icon: IconBug },
   { href: '/traces', label: '链路追踪', icon: IconTrace },
+  { href: '/alerts', label: '告警中心', icon: IconAlert },
   { href: '/users', label: '用户', icon: IconUsers },
   { href: '/members', label: '成员', icon: IconId },
   { href: '/permissions', label: '权限审计', icon: IconShield },
+  { href: '/ops', label: 'Playbook', icon: IconPlaybook },
   { href: '/assistant/chat', label: '助手对话', icon: IconChat },
   { href: '/assistant/aiops', label: '告警分析', icon: IconAIOps },
   { href: '/settings', label: '设置', icon: IconGear },
@@ -65,21 +67,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <nav className="ops-card rounded-3xl p-2">
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Console</div>
                 <div className="space-y-1">
-                  {nav.slice(0, 7).map((n) => (
+                  {nav.slice(0, 8).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
                 <div className="my-2 h-px bg-slate-200" />
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Admin</div>
                 <div className="space-y-1">
-                  {nav.slice(7, 10).map((n) => (
+                  {nav.slice(8, 12).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
                 <div className="my-2 h-px bg-slate-200" />
                 <div className="px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-slate-200/60">Assistant</div>
                 <div className="space-y-1">
-                  {nav.slice(10).map((n) => (
+                  {nav.slice(12).map((n) => (
                     <NavItem key={n.href} href={n.href} label={n.label} icon={n.icon} active={isActive(pathname, n.href)} />
                   ))}
                 </div>
@@ -283,6 +285,30 @@ function IconAIOps({ active }: { active: boolean }) {
       <path d="M7 13l2-2" />
       <path d="M17 13l-2-2" />
       <path d="M12 7a3 3 0 1 0 0 6a3 3 0 0 0 0-6z" />
+    </IconBase>
+  )
+}
+
+function IconPlaybook({ active }: { active: boolean }) {
+  return (
+    <IconBase active={active}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+      <path d="M10 9H8" />
+    </IconBase>
+  )
+}
+
+function IconAlert({ active }: { active: boolean }) {
+  return (
+    <IconBase active={active}>
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
+      <path d="M5.6 5.6l12.8 12.8" />
+      <path d="M18.4 5.6L5.6 18.4" />
+      <circle cx="12" cy="12" r="10" />
     </IconBase>
   )
 }

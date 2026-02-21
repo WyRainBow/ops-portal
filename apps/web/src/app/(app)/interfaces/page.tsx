@@ -268,7 +268,7 @@ export default function InterfacesPage() {
                     <td className="px-3 py-2 text-slate-200/75">{it.source || <span className="text-slate-200/50">_</span>}</td>
                     <td className="sticky right-0 min-w-[100px] shrink-0 bg-transparent px-3 py-2 text-right group-hover:bg-white/5">
                       <Button
-                        tone={copiedKey === rowKey ? 'ok' : 'ghost'}
+                        tone={copiedKey === rowKey ? 'primary' : 'ghost'}
                         type="button"
                         onClick={async () => {
                           const curl = curlFor(it.method, it.path)

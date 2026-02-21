@@ -57,6 +57,9 @@ func (c *AlertWebhookController) Webhook(ctx context.Context, req *ghttp.Request
 		// 3. Calling the Plan-Execute-Replan agent
 	}
 
+	// Store incident for later retrieval
+	alerting.GlobalStore().Add(incident)
+
 	// Return success
 	req.Response.WriteJson(g.Map{
 		"success": true,
@@ -77,6 +80,62 @@ func (c *AlertWebhookController) Status(ctx context.Context, req *ghttp.Request)
 	})
 }
 
+// ListIncidents returns all incidents.
+// GET /api/observability/alerts/list
+func (c *AlertWebhookController) ListIncidents(ctx context.Context, req *ghttp.Request) {
+	store := alerting.GlobalStore()
+	incidents := store.List()
+
+	req.Response.WriteJson(g.Map{
+		"success": true,
+		"incidents": incidents,
+		"count": len(incidents),
+	})
+}
+
+// ListFiring returns only firing incidents.
+// GET /api/observability/alerts/firing
+func (c *AlertWebhookController) ListFiring(ctx context.Context, req *ghttp.Request) {
+	store := alerting.GlobalStore()
+	incidents := store.ListFiring()
+
+	req.Response.WriteJson(g.Map{
+		"success": true,
+		"incidents": incidents,
+		"count": len(incidents),
+	})
+}
+
+// GetIncident retrieves a specific incident.
+// GET /api/observability/alerts/:id
+func (c *AlertWebhookController) GetIncident(ctx context.Context, req *ghttp.Request) {
+	id := req.Get("id").String()
+	if id == "" {
+		req.Response.WriteJson(g.Map{
+			"success": false,
+			"error": "Incident ID is required",
+		})
+		req.Response.WriteStatus(400)
+		return
+	}
+
+	store := alerting.GlobalStore()
+	incident, ok := store.Get(id)
+	if !ok {
+		req.Response.WriteJson(g.Map{
+			"success": false,
+			"error": "Incident not found",
+		})
+		req.Response.WriteStatus(404)
+		return
+	}
+
+	req.Response.WriteJson(g.Map{
+		"success": true,
+		"incident": incident,
+	})
+}
+
 // RegisterAlertWebhookRoutes registers alert webhook routes.
 // This should be called from the router setup.
 func RegisterAlertWebhookRoutes(group *ghttp.RouterGroup) {
@@ -85,5 +144,8 @@ func RegisterAlertWebhookRoutes(group *ghttp.RouterGroup) {
 	group.Group("/alerts", func(alertGroup *ghttp.RouterGroup) {
 		alertGroup.POST("/webhook", controller.Webhook)
 		alertGroup.GET("/status", controller.Status)
+		alertGroup.GET("/list", controller.ListIncidents)
+		alertGroup.GET("/firing", controller.ListFiring)
+		alertGroup.GET("/:id", controller.GetIncident)
 	})
 }

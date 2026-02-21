@@ -344,3 +344,44 @@ export async function aiOps(token: string) {
     body: JSON.stringify({}),
   })
 }
+
+// Playbook APIs
+export async function getPlaybooks(token: string) {
+  return request<{ success: boolean; playbooks: any[]; count: number }>(`/api/ops/playbooks`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getPlaybook(token: string, id: string) {
+  return request<{ success: boolean; playbook: any }>(`/api/ops/playbooks/${encodeURIComponent(id)}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function executePlaybook(
+  token: string,
+  playbookId: string,
+  payload: { playbook_id: string; parameters?: Record<string, any>; reason: string; dry_run?: boolean }
+) {
+  return request<{ success: boolean; execution: any }>(`/api/ops/playbooks/${encodeURIComponent(playbookId)}/execute`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getExecution(token: string, executionId: string) {
+  return request<{ success: boolean; execution: any }>(`/api/ops/executions/${encodeURIComponent(executionId)}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+export async function getAuditLog(token: string) {
+  return request<{ success: boolean; audit_log: any[]; count: number }>(`/api/ops/audit/log`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}

@@ -21,7 +21,7 @@ export default function OverviewPage() {
         setErr(e?.message || '加载失败')
       }
       try {
-        const routes = await getApiRoutes(token, { page_size: 1 })
+        const routes = await getApiRoutes(token, {})
         setInterfaceTotal(Number(routes?.total ?? 0))
       } catch {
         setInterfaceTotal(null)

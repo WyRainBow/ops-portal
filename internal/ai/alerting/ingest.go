@@ -4,10 +4,121 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/WyRainBow/ops-portal/internal/ai/errors"
 )
+
+// Store stores incidents in memory.
+// In production, this should be replaced with a database.
+type Store struct {
+	mu         sync.RWMutex
+	incidents  map[string]*Incident
+	byFingerprint map[string]*Incident // Track alerts by fingerprint for deduplication
+}
+
+// NewStore creates a new incident store.
+func NewStore() *Store {
+	return &Store{
+		incidents:  make(map[string]*Incident),
+		byFingerprint: make(map[string]*Incident),
+	}
+}
+
+// Add adds an incident to the store.
+func (s *Store) Add(incident *Incident) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.incidents[incident.ID] = incident
+
+	// Track by fingerprint for resolved alerts
+	if fp := incident.Labels["fingerprint"]; fp != "" {
+		s.byFingerprint[fp] = incident
+	}
+}
+
+// Get retrieves an incident by ID.
+func (s *Store) Get(id string) (*Incident, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	incident, ok := s.incidents[id]
+	return incident, ok
+}
+
+// List returns all incidents.
+func (s *Store) List() []*Incident {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	result := make([]*Incident, 0, len(s.incidents))
+	for _, inc := range s.incidents {
+		result = append(result, inc)
+	}
+	return result
+}
+
+// ListFiring returns only firing incidents.
+func (s *Store) ListFiring() []*Incident {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	result := make([]*Incident, 0)
+	for _, inc := range s.incidents {
+		if inc.Status == "firing" {
+			result = append(result, inc)
+		}
+	}
+	return result
+}
+
+// UpdateStatus updates an incident's status.
+func (s *Store) UpdateStatus(id, status string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	incident, ok := s.incidents[id]
+	if !ok {
+		return false
+	}
+	incident.Status = status
+	return true
+}
+
+// Delete removes an incident from the store.
+func (s *Store) Delete(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	incident, ok := s.incidents[id]
+	if !ok {
+		return false
+	}
+
+	delete(s.incidents, id)
+	if fp := incident.Labels["fingerprint"]; fp != "" {
+		delete(s.byFingerprint, fp)
+	}
+	return true
+}
+
+// Global store instance.
+var globalStore *Store
+
+// InitStore initializes the global store.
+func InitStore() {
+	globalStore = NewStore()
+}
+
+// GlobalStore returns the global store.
+func GlobalStore() *Store {
+	if globalStore == nil {
+		InitStore()
+	}
+	return globalStore
+}
 
 // Alert represents a Prometheus alert.
 type Alert struct {

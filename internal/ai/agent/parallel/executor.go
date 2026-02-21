@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/WyRainBow/ops-portal/internal/ai/errors"
-	"github.com/cloudwego/eino/components/tool"
 )
 
 // ToolCall represents a tool invocation.
