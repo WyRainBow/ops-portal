@@ -213,6 +213,15 @@ type PermissionAuditsRes struct {
 	PageSize int                   `json:"page_size"`
 }
 
+type DeletePermissionAuditReq struct {
+	g.Meta `path:"/admin/permissions/audits/{id}" method:"delete" summary:"删除一条权限审计记录"`
+	ID     int64 `json:"id" in:"path"`
+}
+
+type DeletePermissionAuditRes struct {
+	Success bool `json:"success"`
+}
+
 // =================
 // Logs
 // =================

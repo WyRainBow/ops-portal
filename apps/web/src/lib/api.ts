@@ -209,6 +209,13 @@ export async function getPermissionAudits(token: string, params: Record<string, 
   })
 }
 
+export async function deletePermissionAudit(token: string, id: number) {
+  return request<{ success: boolean }>(`/api/admin/permissions/audits/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
 export async function getRuntimeStatus(token: string, params: Record<string, any>) {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([k, v]) => {
@@ -338,7 +345,7 @@ export async function streamChat(
 }
 
 export async function aiOps(token: string) {
-  return request<any>(`/api/ai_ops`, {
+  return request<any>(`/api/chat/ai_ops`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({}),

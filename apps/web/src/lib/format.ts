@@ -3,7 +3,9 @@ export function formatRFC3339(ts?: string | null): string {
   try {
     const d = new Date(ts)
     if (Number.isNaN(d.getTime())) return ts
-    return d.toLocaleString()
+    const date = d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })
+    const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true })
+    return `${date} ${time}`
   } catch {
     return ts
   }

@@ -49,12 +49,9 @@ func (c *AlertWebhookController) Webhook(req *ghttp.Request) {
 	// Check if diagnosis should be triggered
 	ingester := alerting.NewIngester()
 	if ingester.ShouldTriggerDiagnosis(incident) {
-		g.Log().Infof(ctx, "Alert %s qualifies for AI diagnosis", incident.ID)
-		// TODO: Trigger AI diagnosis asynchronously
-		// This could be done by:
-		// 1. Publishing to a message queue (Redis, RabbitMQ)
-		// 2. Sending to a background worker
-		// 3. Calling the Plan-Execute-Replan agent
+		g.Log().Infof(ctx, "Alert %s qualifies for AI diagnosis, triggering async diagnosis", incident.ID)
+		// Trigger AI diagnosis asynchronously
+		alerting.GlobalDiagnosis().TriggerDiagnosis(incident)
 	}
 
 	// Store incident for later retrieval
@@ -136,6 +133,52 @@ func (c *AlertWebhookController) GetIncident(req *ghttp.Request) {
 	})
 }
 
+// GetDiagnosis retrieves the AI diagnosis result for an incident.
+// GET /api/observability/alerts/:id/diagnosis
+func (c *AlertWebhookController) GetDiagnosis(req *ghttp.Request) {
+	id := req.Get("id").String()
+	if id == "" {
+		req.Response.WriteJson(g.Map{
+			"success": false,
+			"error": "Incident ID is required",
+		})
+		req.Response.WriteStatus(400)
+		return
+	}
+
+	result, ok := alerting.GlobalDiagnosis().GetResult(id)
+	if !ok {
+		isPending := alerting.GlobalDiagnosis().IsPending(id)
+		req.Response.WriteJson(g.Map{
+			"success": true,
+			"incident_id": id,
+			"status": "pending",
+			"message": "Diagnosis in progress",
+			"pending": isPending,
+		})
+		return
+	}
+
+	if result.Error != nil {
+		req.Response.WriteJson(g.Map{
+			"success": false,
+			"incident_id": id,
+			"status": "failed",
+			"error": result.Error.Error(),
+		})
+		return
+	}
+
+	req.Response.WriteJson(g.Map{
+		"success": true,
+		"incident_id": id,
+		"status": "completed",
+		"result": result.Result,
+		"detail": result.Detail,
+		"created_at": result.CreatedAt,
+	})
+}
+
 // RegisterAlertWebhookRoutes registers alert webhook routes.
 // This should be called from the router setup.
 func RegisterAlertWebhookRoutes(group *ghttp.RouterGroup) {
@@ -147,5 +190,6 @@ func RegisterAlertWebhookRoutes(group *ghttp.RouterGroup) {
 		alertGroup.GET("/list", controller.ListIncidents)
 		alertGroup.GET("/firing", controller.ListFiring)
 		alertGroup.GET("/:id", controller.GetIncident)
+		alertGroup.GET("/:id/diagnosis", controller.GetDiagnosis)
 	})
 }

@@ -2,11 +2,13 @@ package parallel
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/WyRainBow/ops-portal/internal/ai/errors"
+	"github.com/WyRainBow/ops-portal/internal/ai/registry"
 )
 
 // ToolCall represents a tool invocation.
@@ -53,12 +55,31 @@ func (e *Executor) Execute(ctx context.Context, calls []ToolCall) []ToolCall {
 func (e *Executor) executeSingle(ctx context.Context, call ToolCall) []ToolCall {
 	start := time.Now()
 
-	// Get the tool implementation
-	// This assumes tools are registered in the global registry
-	// For now, we'll mark as not implemented
-	call.Error = fmt.Errorf("tool execution not implemented")
-	call.Done = true
+	// Get the tool from registry
+	tool := registry.Global().Get(call.Name)
+	if tool == nil {
+		call.Error = fmt.Errorf("tool not found: %s", call.Name)
+		call.Done = true
+		return []ToolCall{call}
+	}
 
+	// Convert input to JSON string for tool invocation
+	inputBytes, err := json.Marshal(call.Input)
+	if err != nil {
+		call.Error = fmt.Errorf("failed to marshal input: %w", err)
+		call.Done = true
+		return []ToolCall{call}
+	}
+
+	// Invoke the tool - tools expect JSON string input
+	result, err := tool.(interface{ Invoke(context.Context, string) (string, error) }).Invoke(ctx, string(inputBytes))
+	if err != nil {
+		call.Error = fmt.Errorf("tool invocation failed: %w", err)
+	} else {
+		call.Result = result
+	}
+
+	call.Done = true
 	duration := time.Since(start)
 	errors.Info("parallel", fmt.Sprintf("tool %s completed in %v", call.Name, duration))
 
@@ -90,15 +111,8 @@ func (e *Executor) executeParallel(ctx context.Context, calls []ToolCall) []Tool
 			}
 
 			// Execute tool
-			start := time.Now()
-			// TODO: Actually execute the tool
-			// For now, simulate execution
-			tc.Error = fmt.Errorf("tool execution not implemented")
-			tc.Done = true
-			duration := time.Since(start)
-
-			errors.Debug("parallel", fmt.Sprintf("tool %s completed in %v", tc.Name, duration))
-			results[idx] = tc
+			singleResult := e.executeSingle(ctx, tc)
+			results[idx] = singleResult[0]
 		}(i, call)
 	}
 

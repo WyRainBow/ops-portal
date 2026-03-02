@@ -26,6 +26,7 @@ type IAdminV1 interface {
 
 	PermissionRoles(ctx context.Context, req *v1.PermissionRolesReq) (res *v1.PermissionRolesRes, err error)
 	PermissionAudits(ctx context.Context, req *v1.PermissionAuditsReq) (res *v1.PermissionAuditsRes, err error)
+	DeletePermissionAudit(ctx context.Context, req *v1.DeletePermissionAuditReq) (res *v1.DeletePermissionAuditRes, err error)
 
 	RequestLogs(ctx context.Context, req *v1.RequestLogsReq) (res *v1.RequestLogsRes, err error)
 	ErrorLogs(ctx context.Context, req *v1.ErrorLogsReq) (res *v1.ErrorLogsRes, err error)

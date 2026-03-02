@@ -8,12 +8,16 @@ import (
 	"github.com/WyRainBow/ops-portal/internal/controller/admin"
 	"github.com/WyRainBow/ops-portal/internal/controller/auth"
 	"github.com/WyRainBow/ops-portal/internal/controller/chat"
+	"github.com/WyRainBow/ops-portal/internal/controller/knowledge"
 	"github.com/WyRainBow/ops-portal/internal/controller/observability"
 	"github.com/WyRainBow/ops-portal/internal/controller/ops"
 	"github.com/WyRainBow/ops-portal/internal/metrics"
 	"github.com/WyRainBow/ops-portal/internal/ops/playbook"
 	"github.com/WyRainBow/ops-portal/utility/common"
 	"github.com/WyRainBow/ops-portal/utility/middleware"
+
+	"context"
+	"os"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -31,12 +35,14 @@ func main() {
 	// Initialize metrics
 	metrics.InitializeStandardMetrics()
 
-	// Initialize cache (in-memory by default)
-	// TODO: Add Redis support when configured
-	_ = cache.Global()
+	// Initialize cache (in-memory by default, Redis if configured)
+	initCache(ctx)
 
 	// Initialize alert store
 	alerting.InitStore()
+
+	// Initialize diagnosis service (pre-warm the singleton)
+	_ = alerting.GlobalDiagnosis()
 
 	// Initialize playbook executor
 	playbook.InitExecutor()
@@ -99,8 +105,40 @@ func main() {
 			opsGroup.Middleware(middleware.ResponseMiddleware)
 			ops.RegisterOpsRoutes(opsGroup)
 		})
+
+		// Knowledge endpoints - require admin or member role
+		group.Group("/knowledge", func(knowledgeGroup *ghttp.RouterGroup) {
+			knowledgeGroup.Middleware(middleware.JWTAuth(nil))
+			knowledgeGroup.Middleware(middleware.ResponseMiddleware)
+			knowledgeGroup.Bind(knowledge.NewV1())
+		})
 	})
 
 	s.SetPort(6872)
 	s.Run()
+}
+
+// initCache initializes the cache backend.
+// It uses Redis if configured, otherwise falls back to in-memory cache.
+func initCache(ctx context.Context) {
+	// Try to get Redis configuration from environment
+	redisAddr := os.Getenv("REDIS_ADDR")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	redisDB := 0
+
+	if redisAddr != "" {
+		// Use Redis cache
+		redisCache, err := cache.NewRedisCache(redisAddr, redisPassword, redisDB)
+		if err != nil {
+			g.Log().Warningf(ctx, "Failed to connect to Redis at %s: %v, using in-memory cache", redisAddr, err)
+			_ = cache.Global()
+			return
+		}
+		cache.SetGlobal(redisCache)
+		g.Log().Infof(ctx, "Using Redis cache at %s", redisAddr)
+	} else {
+		// Use in-memory cache
+		_ = cache.Global()
+		g.Log().Infof(ctx, "Using in-memory cache")
+	}
 }

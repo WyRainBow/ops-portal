@@ -123,3 +123,15 @@ func (c *ControllerV1) PermissionAudits(ctx context.Context, req *v1.PermissionA
 	}, nil
 }
 
+func (c *ControllerV1) DeletePermissionAudit(ctx context.Context, req *v1.DeletePermissionAuditReq) (res *v1.DeletePermissionAuditRes, err error) {
+	if _, err := requireAdmin(ctx); err != nil {
+		return nil, err
+	}
+	db, err := store.DB(ctx)
+	if err != nil {
+		return nil, gerror.Newf("db init failed: %v", err)
+	}
+	n := db.WithContext(ctx).Where("id = ?", req.ID).Delete(&store.PermissionAuditLog{}).RowsAffected
+	return &v1.DeletePermissionAuditRes{Success: n > 0}, nil
+}
+

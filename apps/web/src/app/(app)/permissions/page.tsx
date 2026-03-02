@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { getToken, parseJwtRole } from '../../../lib/auth'
-import { getPermissionAudits, getPermissionRoles } from '../../../lib/api'
+import { deletePermissionAudit, getPermissionAudits, getPermissionRoles } from '../../../lib/api'
 import { clampInt, formatRFC3339 } from '../../../lib/format'
 import { Badge, Button, Card, Select } from '../../../components/Ui'
+import { PermissionMatrix, PermissionMatrixCompact } from '../../../components/PermissionMatrix'
+
+type ViewMode = 'table' | 'compact' | 'json'
 
 export default function PermissionsPage() {
   const token = getToken() || ''
@@ -13,12 +16,14 @@ export default function PermissionsPage() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [roles, setRoles] = useState<any | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
 
   const [auditsLoading, setAuditsLoading] = useState(false)
   const [auditsErr, setAuditsErr] = useState<string | null>(null)
   const [audits, setAudits] = useState<any | null>(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const refreshRoles = async () => {
     setLoading(true)
@@ -60,6 +65,23 @@ export default function PermissionsPage() {
   const total = Number(audits?.total || 0)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
+  const handleDeleteAudit = async (id: number) => {
+    if (deletingId != null) return
+    setDeletingId(id)
+    setAuditsErr(null)
+    try {
+      await deletePermissionAudit(token, id)
+      await refreshAudits()
+    } catch (e: any) {
+      setAuditsErr(e?.message || String(e))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const rolesData = roles?.roles || roles || {}
+  const isAdmin = role === 'admin'
+
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
@@ -76,10 +98,42 @@ export default function PermissionsPage() {
         </div>
       </div>
 
-      <Card title="角色权限矩阵" subtitle="后端返回为结构化 JSON（v1 先做展示，后续可做成可视化矩阵）。">
-        <pre className="max-h-[380px] overflow-auto rounded-2xl border border-white/10 bg-black/30 p-4 text-xs leading-relaxed text-slate-100">
-          {JSON.stringify(roles?.roles || roles || {}, null, 2)}
-        </pre>
+      <Card
+        title="角色权限矩阵"
+        subtitle="各角色对不同资源的权限配置"
+        right={
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-200/60">视图:</span>
+            <div className="flex rounded-lg border border-white/10 p-0.5">
+              <button
+                className={`rounded px-2 py-1 text-xs ${viewMode === 'table' ? 'bg-white/10 text-white' : 'text-slate-200/60 hover:text-slate-200'}`}
+                onClick={() => setViewMode('table')}
+              >
+                表格
+              </button>
+              <button
+                className={`rounded px-2 py-1 text-xs ${viewMode === 'compact' ? 'bg-white/10 text-white' : 'text-slate-200/60 hover:text-slate-200'}`}
+                onClick={() => setViewMode('compact')}
+              >
+                卡片
+              </button>
+              <button
+                className={`rounded px-2 py-1 text-xs ${viewMode === 'json' ? 'bg-white/10 text-white' : 'text-slate-200/60 hover:text-slate-200'}`}
+                onClick={() => setViewMode('json')}
+              >
+                JSON
+              </button>
+            </div>
+          </div>
+        }
+      >
+        {viewMode === 'table' && <PermissionMatrix data={rolesData} />}
+        {viewMode === 'compact' && <PermissionMatrixCompact data={rolesData} />}
+        {viewMode === 'json' && (
+          <pre className="max-h-[380px] overflow-auto rounded-2xl border border-white/10 bg-black/30 p-4 text-xs leading-relaxed text-slate-100">
+            {JSON.stringify(rolesData, null, 2)}
+          </pre>
+        )}
       </Card>
 
       <Card
@@ -125,6 +179,7 @@ export default function PermissionsPage() {
                 <th className="px-3 py-2">action</th>
                 <th className="px-3 py-2">from</th>
                 <th className="px-3 py-2">to</th>
+                {isAdmin ? <th className="px-3 py-2 text-right">操作</th> : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -136,11 +191,23 @@ export default function PermissionsPage() {
                   <td className="px-3 py-2">{it.action ? <Badge tone="neutral">{it.action}</Badge> : ''}</td>
                   <td className="px-3 py-2 text-slate-200/80">{it.from_role || ''}</td>
                   <td className="px-3 py-2 text-slate-200/80">{it.to_role || ''}</td>
+                  {isAdmin ? (
+                    <td className="px-3 py-2 text-right">
+                      <Button
+                        tone="danger"
+                        type="button"
+                        disabled={deletingId === it.id}
+                        onClick={() => handleDeleteAudit(it.id)}
+                      >
+                        {deletingId === it.id ? '删除中…' : '删除'}
+                      </Button>
+                    </td>
+                  ) : null}
                 </tr>
               ))}
               {auditItems.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-6 text-center text-slate-200/60" colSpan={6}>
+                  <td className="px-3 py-6 text-center text-slate-200/60" colSpan={isAdmin ? 7 : 6}>
                     无数据
                   </td>
                 </tr>
